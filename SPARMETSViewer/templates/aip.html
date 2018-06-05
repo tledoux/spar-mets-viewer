@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ _('AIP ID:') }} {{ aip_uuid|safe }}</h3>
+<p><strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
+{% if dcmetadata %}
+<div class="card bg-light border-secondary mb-3">
+<div class="card-header"><h3><a data-toggle="collapse" href="#descMetaDiv" aria-expanded="true" aria-controls="descMetaDiv">{{ _('Descriptive metadata') }}</a></h3>
+</div>
+<div class="collapse show" id="descMetaDiv">
+<div class="card-body">
+  {% for element in dcmetadata %}
+    <p><strong>{{ gettext(element['element']|title + ':') }}</strong> {{ element['value']|safe }}</p>
+  {% endfor %}
+</div>
+</div>
+</div>
+{% endif %}
+{% if original_files %}
+<div id="toolbar">
+<h3>{{ _('Files (count: %(fc)s)', fc=filecount) }}</h3>
+<p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>
+</div>
+<table data-toggle="table" 
+      data-toolbar="#toolbar"
+      data-icons-prefix="fa"
+      data-buttons-class="default"
+      data-striped="true"
+      data-sortable="true"
+      data-search="true"
+      data-show-refresh="false"
+      data-show-toggle="true"
+      data-show-columns="true"
+      data-show-export="true"
+      data-locale="{{ _('en') }}"
+>
+<!--      data-icons="{paginationSwitchDown:'fa-toggle-down',paginationSwitchUp:'fa-toggle-up',refresh:'fa-refresh',toggleOff:'fa-list-alt',toggleOn:'fa-list-alt',columns:'fa-th-list',detailOpen:'fa-plus',detailClose:'fa-minus',fullscreen:'fa-arrows-alt',export:'fa-share'}" 
+this.options.icons.toggle
+-->
+<thead>
+<tr>
+  <th data-sortable="true" data-field="filepath" data-switchable="false">{{ _('Filepath') }}</th>
+  <th data-sortable="true" data-field="format">{{ _('Format') }}</th>
+  <th data-align="right" data-field="version">{{ _('Version') }}</th>
+  <th data-sortable="true" data-field="ark">{{ _('arkFormat') }}</th>
+  <th data-sortable="true" data-field="size" data-formatter="sizeFormatter" data-align="right">{{ _('Size (bytes)') }}</th>
+  <th data-sortable="true" data-field="use">{{ _('USE') }}</th>
+  <th data-sortable="true" data-field="id">{{ _('ID') }}</th>
+  <th data-tableexport-display="none">{{ _('Details') }}</th>
+</tr>
+</thead>
+    {% for original_file in original_files %}
+        <tr>
+          
+          <td>{{ original_file['filepath'] }}</td>
+          <td>{{ original_file['format'] }}</td>
+          <td>{{ original_file['version'] }}</td>
+          <td>{{ original_file['arkFormat']|safe }}</td>
+          <td>{{ original_file['bytes'] }}</td>
+          <td>{{ original_file['use'] }}</td>
+          <td>{{ original_file['id'] }}</td>
+          <td data-tableexport-display="none"><a href="/aip/{{ mets_file }}/file/{{ original_file['id'] }}" target="_blank"><button class="btn btn-primary"><span class="fa fa-eye"></span> {{ _('View') }}</button></a></td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    </table>
+{% endif %}
+<script>
+    function sizeFormatter(value) {
+        return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');
+    }
+</script>
+{% endblock %}

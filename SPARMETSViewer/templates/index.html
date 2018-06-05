@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+  <br>
+  <h3>{{ _('A web application for human-friendly exploration of SPAR METS files') }}</h3>
+  {% autoescape false %}
+  <p><em>{{ _('Based on %(link_orig)s', link_orig='<a href="https://github.com/timothyryanwalsh/METSFlask">METSFlask</a> for Archivematica.') }}</em></p>
+  {% endautoescape %}
+  <br>
+  <div id="toolbar">
+  <h4>{{ _('METS Files to browse:') }}</h4>
+  <p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>
+  </div>
+  <table data-toggle="table" 
+        data-toolbar="#toolbar"
+        data-icons-prefix="fa"
+        data-buttons-class="default"
+        data-striped="true"
+        data-sortable="true"
+        data-search="true"
+        data-show-refresh="false"
+        data-show-toggle="true"
+        data-show-columns="false"
+        data-show-export="true"
+        data-locale="{{ _('en') }}"
+>
+  <thead>
+  <tr>
+  <th data-sortable="true" data-field="metsfile">{{ _('METS File') }}</th>
+  <th data-sortable="true" data-field="alias">{{ _('Nickname') }}</th>
+  <th data-tableexport-display="none">{{ _('Actions') }}</th>
+  </tr>
+  </thead>
+  {% if mets_instances %}
+    {% for mets_instance in mets_instances %}
+      <tr>
+        <td>{{ mets_instance.metsfile }}</td>
+        <td>{{ mets_instance.nickname }}</td>
+        <td data-tableexport-display="none">
+          <a href="/aip/{{ mets_instance.metsfile }}"><button class="btn btn-primary"><span class="fa fa-eye"></span> {{ _('View') }}</button></a>
+          <a href="/delete/{{ mets_instance.metsfile }}"><button class="btn btn-danger"><span class="fa fa-remove"></span> {{ _('Delete') }}</button></a>
+        </td>
+      </tr>
+    {% endfor %}
+  {% endif %}
+  </table>
+{% endblock %}

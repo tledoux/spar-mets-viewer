@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ _('File ID:') }} {{ original_file['id'] }}</h3>
+<p><strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
+
+<div class="card bg-light border-secondary mb-3">
+<div class="card-header"><h3><a data-toggle="collapse" href="#generalDetailsDiv" aria-expanded="true" aria-controls="generalDetailsDiv">{{ _('General details') }}</a></h3>
+</div>
+<div class="collapse show" id="generalDetailsDiv">
+<div class="card-body">
+<p><strong>{{ _('Filepath:') }}</strong> {{ original_file['filepath'] }}</p>
+<p><strong>{{ _('Use:') }}</strong> {{ original_file['use'] }}</p>
+<p><strong>{{ _('Size (human-readable):') }}</strong> {{ original_file['size'] }}</p>
+<p><strong>{{ _('Size (bytes):') }}</strong> {{ original_file['bytes'] }}</p>
+<p><strong>{{ _('File format:') }}</strong> {{ original_file['format'] }}</p>
+<p><strong>{{ _('Version:') }}</strong> {{ original_file['version'] }}</p>
+<p><strong>{{ _('Ark format:') }}</strong> {{ original_file['arkFormat']|safe }}</p>
+<p><strong>{{ _('amdSec ID:') }}</strong> {{ original_file['amdsec_id'] }}</p>
+<p><strong>{{ _('%(hashtype)s hash:', hashtype=original_file['hashtype']) }}</strong> {{ original_file['hashvalue'] }}</p>
+</div>
+</div>
+</div>
+
+<div class="card bg-light border-secondary mb-3">
+<div class="card-header"><h3><a data-toggle="collapse" href="#detailedIdDiv" aria-expanded="true" aria-controls="detailedIdDiv">{{ _('Detailed identification') }}</a></h3>
+</div>
+<div class="collapse show" id="detailedIdDiv">
+<div class="card-body well">
+{% if original_file['mix_present'] %}
+<h4 class="card-title"><a href="https://www.loc.gov/standards/mix/" target="_blank">MIX<a/></h4>
+{% endif %}
+{% if original_file['mix_dimension'] %}
+<p><strong>{{ _('Dimension:') }}</strong> {{ original_file['mix_dimension'] }}</p>
+{% endif %}
+{% if original_file['mix_height'] %}
+<p><strong>{{ _('Height:') }}</strong> {{ original_file['mix_height'] }}</p>
+{% endif %}
+{% if original_file['mix_width'] %}
+<p><strong>{{ _('Width:') }}</strong> {{ original_file['mix_width'] }}</p>
+{% endif %}
+{% if original_file['mix_bitsPerSample'] %}
+<p><strong>{{ _('Bits per sample:') }}</strong> {{ original_file['mix_bitsPerSample'] }}</p>
+{% endif %}
+{% if original_file['mix_rawoutput'] %}
+<p><strong>{{ _('Mix output:') }}</strong></p><textarea> {{ original_file['mix_rawoutput'] }}</textarea>
+<br>
+{% endif %}
+
+{% if original_file['textmd_present'] %}
+<h4 class="card-title"><a href="https://www.loc.gov/standards/textMD/" target="_blank">TextMD</a></h4>
+{% endif %}
+{% if original_file['textmd_charset'] %}
+<p><strong>{{ _('Charset:') }}</strong> {{ original_file['textmd_charset'] }}</p>
+{% endif %}
+{% if original_file['textmd_markup_basis'] %}
+<p><strong>{{ _('Markup basis:') }}</strong> {{ original_file['textmd_markup_basis'] }}</p>
+{% endif %}
+{% if original_file['textmd_markup_language'] %}
+<p><strong>{{ _('Markup language:') }}</strong> {{ original_file['textmd_markup_language'] }}</p>
+{% endif %}
+{% if original_file['textmd_rawoutput'] %}
+<p><strong>{{ _('TextMD output:') }}</strong> {{ original_file['textmd_rawoutput'] }}</p>
+<br>
+{% endif %}
+
+{% if original_file['containermd_present'] %}
+<h4 class="card-title"><a href="http://bibnum.bnf.fr/containerMD-v1_1/index.html" target="_blank">containerMD</a></h4>
+{% endif %}
+{% if original_file['containermd_entries_number'] %}
+<p><strong>{{ _('Number of entries:') }}</strong> {{ original_file['containermd_entries_number'] }}</p>
+{% endif %}
+
+{% if original_file['mpeg7_present'] %}
+<h4 class="card-title"><a href="https://fr.wikipedia.org/wiki/MPEG-7" target="_blank">MPEG7</a></h4>
+{% endif %}
+{% if original_file['mpeg7_mediaformat'] %}
+<p><strong>{{ _('Media Format:') }}</strong> {{ original_file['mpeg7_mediaformat'] }}</p>
+{% endif %}
+{% if original_file['mpeg7_audio_format'] %}
+<p><strong>{{ _('Audio format:') }}</strong> {{ original_file['mpeg7_audio_format'] }}</p>
+{% endif %}
+{% if original_file['mpeg7_audio_samplerate'] %}
+<p><strong>{{ _('Audio Rate:') }}</strong> {{ original_file['mpeg7_audio_samplerate'] }}</p>
+{% endif %}
+{% if original_file['mpeg7_video_format'] %}
+<p><strong>{{ _('Video format:') }}</strong> {{ original_file['mpeg7_video_format'] }}</p>
+{% endif %}
+{% if original_file['mpeg7_video_samplerate'] %}
+<p><strong>{{ _('Video Rate:') }}</strong> {{ original_file['mpeg7_video_samplerate'] }}</p>
+{% endif %}
+{% if original_file['mpeg7_duration'] %}
+<p><strong>{{ _('Duration:') }}</strong> {{ original_file['mpeg7_duration'] }}</p>
+{% endif %}
+
+{% if original_file['xmp_present'] %}
+<h4 class="card-title"><a href="https://www.adobe.com/products/xmp.html" target="_blank">XMP</a></h4>
+{% endif %}
+{% if original_file['xmp_encryption'] %}
+<p><strong>{{ _('Encryption:') }}</strong> {{ original_file['xmp_encryption'] }}</p>
+{% endif %}
+{% if original_file['xmp_agent_validation'] %}
+<p><strong>{{ _('Validation agent:') }}</strong> {{ original_file['xmp_agent_validation'] }}</p>
+{% endif %}
+{% if original_file['xmp_rawoutput'] %}
+<p><strong>{{ _('XMP output:') }}</strong> {{ original_file['xmp_rawoutput'] }}</p>
+<br>
+{% endif %}
+
+</div>
+</div>
+</div>
+
+<div class="card bg-light border-secondary mb-3">
+<div class="card-header"><h3><a data-toggle="collapse" href="#premisDiv" aria-expanded="true" aria-controls="premisDiv">{{ _('PREMIS Events') }}</a></h3>
+</div>
+<div class="collapse show" id="premisDiv">
+<div class="card-body well">
+{% for premis_event in original_file['premis_events'] %}
+<h4 class="card-title">{{ _('Event UUID:') }} {{ premis_event['event_uuid'] }}</h4>
+<p><strong>{{ _('Event type:') }}</strong> {{ premis_event['event_type'] }}</p>
+<p><strong>{{ _('Event datetime:') }}</strong> {{ premis_event['event_datetime'] }}</p>
+{% if premis_event['event_detail'] %}
+<p><strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}</p>
+{% endif %}
+{% if premis_event['event_outcome'] %}
+<p><strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome'] }}</p>
+{% endif %}
+{% if premis_event['event_detail_note'] %}
+<p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note'] }}</p>
+{% endif %}
+  {% for premis_agent in premis_event['premis_agents'] %}
+    <p><strong>{{ _('PREMIS Agent') }}</strong></p>
+    <p>{{ _('Agent type:') }} {{ premis_agent['agent_type'] }}</p>
+    <p>{{ _('Agent value:') }} {{ premis_agent['agent_value'] }}</p>
+  {% endfor %}
+<br>
+{% endfor %}
+</div>
+</div>
+</div>
+{% endblock %}
