@@ -8,7 +8,7 @@ import math
 import os
 import sys
 from lxml import etree, objectify
-
+from urllib.parse import urlencode
 
 def convert_size(size):
     # convert size to human-readable form
@@ -22,11 +22,15 @@ def convert_size(size):
 
 def addNaan(ark):
     if ark.startswith('ark:/12148/c'):
-        return "<a href=\"http://catalogue.bnf.fr/%s\" target=\"_blank\">%s</a>" % (ark, ark)
+        myurl = "http://catalogue.bnf.fr/%s"%ark
+        return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl, ark)
     if ark.startswith('ark:/12148/bpt6k') or ark.startswith('ark:/12148/bttv'):
-        return "<a href=\"http://gallica.bnf.fr/%s\" target=\"_blank\">%s</a>" % (ark, ark)
+        myurl = "http://gallicaintramuros.bnf.fr/%s"%ark
+        return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl, ark)
     if ark.startswith('ark:/12148/br2d2'):
-        return "<a href=\"http://reference.spar.bnf.fr/sparql?query=SELECT+*+WHERE+{GRAPH+?g+{%s+?p+?o}+}\" target=\"_blank\">%s</a>" % (ark, ark)
+        myurl = "http://consultation.spar.bnf.fr/sparql?"
+        myparams = { 'query':'SELECT ?s ?p ?o WHERE { GRAPH ?g { <%s> a sparcontext:channel. ?s ?p ?o.}}'%ark }
+        return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl + urlencode(myparams), ark)
     return ark
 
 class METSFile(object):

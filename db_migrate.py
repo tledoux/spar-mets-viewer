@@ -1,4 +1,4 @@
-#!venv/bin/python
+#!python
 import imp
 from migrate.versioning import api
 from SPARMETSViewer import db

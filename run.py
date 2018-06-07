@@ -1,3 +1,3 @@
-#!venv/Scripts/python
+#!python
 from SPARMETSViewer import app
-app.run(debug=True)
+app.run(debug=True,host='0.0.0.0')
