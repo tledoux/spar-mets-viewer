@@ -7,6 +7,7 @@ import fnmatch
 import math
 import os
 import sys
+from flask_babel import gettext
 from lxml import etree, objectify
 from urllib.parse import urlencode
 
@@ -37,6 +38,8 @@ class METSFile(object):
     """
     Class for METS file parsing methods
     """
+    
+    # Dictionnary of XML prefixes and their namespaces
     NAMESPACES = {
       'xml': 'http://www.w3.org/XML/1998/namespace',
       'xsd': 'http://www.w3.org/2001/XMLSchema',
@@ -55,14 +58,21 @@ class METSFile(object):
       'harvestInfo': 'http://netarchive.dk/schema/harvestInfo',
       'detailsOp': 'http://bibnum.bnf.fr/ns/detailsOperation'
     }
-    
-    def __init__(self, path, dip_id, nickname):
+    # Array of Dublic Elements to be translated
+    DC_ELEMENTS = [ gettext('Title:'), gettext('Subject:'), gettext('Description:'), gettext('Source:'), 
+        gettext('Language:'), gettext('Relation:'),
+        gettext('Coverage:'), gettext('Creator:'), gettext('Contributor:'), gettext('Publisher:'),
+        gettext('Rights:'), gettext('Date:'), gettext('Type:'), gettext('Format:'), gettext('Identifier:'), 
+        gettext('Audience:'), gettext('Provenance:'),
+        gettext('Ark Identifier:'), gettext('Production Identifier:'), gettext('Version Identifier:'), gettext('Channel Identifier:') ]
+
+    def __init_gettext(self, path, dip_id, nickname):
         self.path = os.path.abspath(path)
         self.dip_id = dip_id
         self.nickname = nickname
         self.ark = ''
 
-    def __str__(self):
+    def __str_gettext(self):
         return self.path
 
     def parse_dc(self, root):
@@ -134,7 +144,7 @@ class METSFile(object):
         return dcmetadata
 
     def parse_element_with_xpath_dictionary(self, element, data, dict):
-        """parse an element to extract information according to the dictionary"""
+        """parse an element to extract information according to the given dictionary"""
         for key, value in dict.items():
             #print("THL search ", key, value, file=sys.stderr)
             #target = element.find(value)

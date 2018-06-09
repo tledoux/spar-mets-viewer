@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-06-05 20:07+0200\n"
+"POT-Creation-Date: 2018-06-09 15:15+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -16,7 +16,91 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.6.0\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: SPARMETSViewer/parsemets.py:62
+msgid "Title:"
+msgstr "Titre :"
+
+#: SPARMETSViewer/parsemets.py:62
+msgid "Subject:"
+msgstr "Sujet :"
+
+#: SPARMETSViewer/parsemets.py:62
+msgid "Description:"
+msgstr "Description :"
+
+#: SPARMETSViewer/parsemets.py:62
+msgid "Source:"
+msgstr "Source :"
+
+#: SPARMETSViewer/parsemets.py:63
+msgid "Language:"
+msgstr "Langue :"
+
+#: SPARMETSViewer/parsemets.py:63
+msgid "Relation:"
+msgstr "Relation :"
+
+#: SPARMETSViewer/parsemets.py:64
+msgid "Coverage:"
+msgstr "Couverture :"
+
+#: SPARMETSViewer/parsemets.py:64
+msgid "Creator:"
+msgstr "Auteur :"
+
+#: SPARMETSViewer/parsemets.py:64
+msgid "Contributor:"
+msgstr "Contributeur :"
+
+#: SPARMETSViewer/parsemets.py:64
+msgid "Publisher:"
+msgstr "Editeur :"
+
+#: SPARMETSViewer/parsemets.py:65
+msgid "Rights:"
+msgstr "Droits :"
+
+#: SPARMETSViewer/parsemets.py:65
+msgid "Date:"
+msgstr "Date :"
+
+#: SPARMETSViewer/parsemets.py:65
+msgid "Type:"
+msgstr "Type :"
+
+#: SPARMETSViewer/parsemets.py:65
+msgid "Format:"
+msgstr "Format :"
+
+#: SPARMETSViewer/parsemets.py:65
+msgid "Identifier:"
+msgstr "Identifiant :"
+
+#: SPARMETSViewer/parsemets.py:66
+msgid "Audience:"
+msgstr "Audience :"
+
+#: SPARMETSViewer/parsemets.py:66
+msgid "Provenance:"
+msgstr "Provenance :"
+
+#: SPARMETSViewer/parsemets.py:67
+msgid "Ark Identifier:"
+msgstr "Identifiant ARK :"
+
+#: SPARMETSViewer/parsemets.py:67
+msgid "Production Identifier:"
+msgstr "Identifiant de production :"
+
+#: SPARMETSViewer/parsemets.py:67
+msgid "Version Identifier:"
+msgstr "Identifiant de version :"
+
+#: SPARMETSViewer/parsemets.py:67
+msgid "Channel Identifier:"
+msgstr "Identifiant de chaîne :"
 
 #: SPARMETSViewer/templates/aip.html:3
 msgid "AIP ID:"
@@ -330,47 +414,4 @@ msgstr "Succès ! Fichier METS téléchargé !"
 #: SPARMETSViewer/templates/uploadsuccess.html:5
 msgid "Return home/view your METS file"
 msgstr "Retour/voir votre fichier METS"
-
-# Translations for Dublin Core attribute
-msgid "Title:"
-msgstr "Titre :"
-
-msgid "Description:"
-msgstr "Description :"
-
-msgid "Type:"
-msgstr "Type :"
-
-msgid "Date:"
-msgstr "Date :"
-
-msgid "Language:"
-msgstr "Langue :"
-
-msgid "Relation:"
-msgstr "Relation :"
-
-msgid "Publisher:"
-msgstr "Editeur :"
-
-msgid "Creator:"
-msgstr "Auteur :"
-
-msgid "Audience:"
-msgstr "Audience :"
-
-msgid "Provenance:"
-msgstr "Provenance :"
-
-msgid "Ark Identifier:"
-msgstr "Identifiant ARK :"
-
-msgid "Production Identifier:"
-msgstr "Identifiant de production :"
-
-msgid "Version Identifier:"
-msgstr "Identifiant de version :"
-
-msgid "Channel Identifier:"
-msgstr "Identifiant de chaîne :"
 
