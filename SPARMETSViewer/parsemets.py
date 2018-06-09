@@ -72,7 +72,7 @@ class METSFile(object):
         self.nickname = nickname
         self.ark = ''
 
-    def __str_gettext(self):
+    def __str__(self):
         return self.path
 
     def parse_dc(self, root):
