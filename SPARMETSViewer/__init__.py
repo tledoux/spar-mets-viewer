@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Initialization of the Flask App."""
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_babel import Babel

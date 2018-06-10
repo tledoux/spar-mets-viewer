@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Definition of the model in database."""
+
 from SPARMETSViewer import db
 
 class METS(db.Model):
