@@ -128,10 +128,12 @@
 {% if premis_event['event_detail_note'] %}
 <p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note'] }}</p>
 {% endif %}
+{% if premis_event['premis_agents'] %}
+  <p><strong>{{ _('PREMIS Agent') }}</strong></p>
   {% for premis_agent in premis_event['premis_agents'] %}
-    <p><strong>{{ _('PREMIS Agent') }}</strong></p>
-    <p><strong>{{ premis_agent['agent_role'] }} :</strong> {{ premis_agent['agent_value'] }} <i>({{ premis_agent['agent_type'] }})</i></p>
+    <p>&nbsp;&nbsp;&nbsp;<strong>{{ premis_agent['agent_role'] }} :</strong> {{ premis_agent['agent_value'] }} <i>({{ premis_agent['agent_type'] }})</i></p>
   {% endfor %}
+{% endif %}
 <br>
 {% endfor %}
 </div>

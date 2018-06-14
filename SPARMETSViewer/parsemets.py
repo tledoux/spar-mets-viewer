@@ -155,6 +155,17 @@ class METSFile(object):
                         self.ark = value
                     dc_element['value'] = add_naan(value)
                     dcmetadata.append(dc_element)
+        else:
+            # Try with the mets header
+            header = root.find('metsHdr')
+            if header is not None:
+                production_identifier = header.xpath(
+                    "concat(./altRecordID[@TYPE='producerIdentifier']/text(), "
+                    "'_', ./altRecordID[@TYPE='productionIdentifier']/text())")
+                dc_element = dict()
+                dc_element['element'] = 'production Identifier'
+                dc_element['value'] = production_identifier
+                dcmetadata.append(dc_element)
 
         return dcmetadata
 
