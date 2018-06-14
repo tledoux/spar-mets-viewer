@@ -12,10 +12,12 @@ from config import LANGUAGES
 from .models import METS
 from .parsemets import METSFile
 
+
 @babel.localeselector
 def get_locale():
     """Retrieve locale based on available languages"""
     return request.accept_languages.best_match(LANGUAGES.keys())
+
 
 def allowed_file(filename):
     """ Return the files with allowed extensions"""
@@ -77,8 +79,10 @@ def show_aip(mets_file):
     original_files = mets_instance.metslist
     dcmetadata = mets_instance.dcmetadata
     filecount = mets_instance.originalfilecount
+    aip_uuid = mets_file
     for element in dcmetadata:
-        if element['element'] == 'ark identifier':
+        tag = element.get('element')
+        if tag and tag == 'ark identifier':
             aip_uuid = element['value']
             break
 

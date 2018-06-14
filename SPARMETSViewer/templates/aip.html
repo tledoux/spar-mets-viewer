@@ -9,12 +9,45 @@
 <div class="collapse show" id="descMetaDiv">
 <div class="card-body">
   {% for element in dcmetadata %}
+  {% if element['element'] %}
     <p><strong>{{ gettext(element['element']|title + ':') }}</strong> {{ element['value']|safe }}</p>
+  {% endif %}
   {% endfor %}
 </div>
 </div>
 </div>
+
+<div class="card bg-light border-secondary mb-3">
+<div class="card-header"><h3><a data-toggle="collapse" href="#premisDiv" aria-expanded="true" aria-controls="premisDiv">{{ _('PREMIS Events') }}</a></h3>
+</div>
+<div class="collapse show" id="premisDiv">
+<div class="card-body well">
+{% for premis_event in dcmetadata %}
+{% if premis_event['event'] %}
+<h4 class="card-title">{{ _('Event UUID:') }} {{ premis_event['event_uuid'] }}</h4>
+<p><strong>{{ _('Event type:') }}</strong> {{ premis_event['event_type'] }}</p>
+<p><strong>{{ _('Event datetime:') }}</strong> {{ premis_event['event_datetime'] }}</p>
+{% if premis_event['event_detail'] %}
+<p><strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}</p>
 {% endif %}
+{% if premis_event['event_outcome'] %}
+<p><strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome'] }}</p>
+{% endif %}
+{% if premis_event['event_detail_note'] %}
+<p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note'] }}</p>
+{% endif %}
+  {% for premis_agent in premis_event['premis_agents'] %}
+    <p><strong>{{ _('PREMIS Agent') }}</strong></p>
+    <p><strong>{{ premis_agent['agent_role'] }} :</strong> {{ premis_agent['agent_value'] }} <i>({{ premis_agent['agent_type'] }})</i></p>
+  {% endfor %}
+<br>
+{% endif %}
+{% endfor %}
+</div>
+</div>
+</div>
+{% endif %}
+
 {% if original_files %}
 <div id="toolbar">
 <h3>{{ _('Files (count: %(fc)s)', fc=filecount) }}</h3>
@@ -65,6 +98,7 @@ this.options.icons.toggle
 {% else %}
     </table>
 {% endif %}
+
 <script>
     function sizeFormatter(value) {
         return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');

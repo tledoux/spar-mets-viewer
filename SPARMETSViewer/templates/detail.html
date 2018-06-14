@@ -130,8 +130,7 @@
 {% endif %}
   {% for premis_agent in premis_event['premis_agents'] %}
     <p><strong>{{ _('PREMIS Agent') }}</strong></p>
-    <p>{{ _('Agent type:') }} {{ premis_agent['agent_type'] }}</p>
-    <p>{{ _('Agent value:') }} {{ premis_agent['agent_value'] }}</p>
+    <p><strong>{{ premis_agent['agent_role'] }} :</strong> {{ premis_agent['agent_value'] }} <i>({{ premis_agent['agent_type'] }})</i></p>
   {% endfor %}
 <br>
 {% endfor %}

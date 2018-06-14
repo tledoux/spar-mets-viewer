@@ -3,6 +3,7 @@
 
 from SPARMETSViewer import db
 
+
 class METS(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     metsfile = db.Column(db.String(120), index=True, unique=True)

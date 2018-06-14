@@ -24,22 +24,24 @@ def convert_size(size):
     string_size = string_size.replace('.0', '')
     return '{} {}'.format(string_size, size_name[i])
 
+
 def add_naan(ark):
     """Add links to known ARKs identifier"""
     if ark.startswith('ark:/12148/c'):
-        myurl = "http://catalogue.bnf.fr/%s"%ark
+        myurl = "http://catalogue.bnf.fr/%s" % ark
         return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl, ark)
     if ark.startswith('ark:/12148/bpt6k') or ark.startswith('ark:/12148/bttv'):
-        myurl = "http://gallicaintramuros.bnf.fr/%s"%ark
+        myurl = "http://gallicaintramuros.bnf.fr/%s" % ark
         return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl, ark)
     if ark.startswith('ark:/12148/br2d2'):
         myurl = "http://consultation.spar.bnf.fr/sparql?"
         myparams = {
             'query':
-            'SELECT ?s ?p ?o WHERE { GRAPH ?g { <%s> a sparcontext:channel. ?s ?p ?o.}}'%ark
+            'SELECT ?s ?p ?o WHERE { GRAPH ?g { <%s> a sparcontext:channel. ?s ?p ?o.}}' % ark
         }
         return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl + urlencode(myparams), ark)
     return ark
+
 
 class METSFile(object):
     """
@@ -89,7 +91,7 @@ class METSFile(object):
     def parse_dc(self, root):
         """
         Parse group-level Dublin Core metadata and PREMIS:OBJECT identifiers into
-        dcmetadata dictionary.
+        dcmetadata array.
         """
         # Parse DC
         dmds = root.xpath('dmdSec/mdWrap[@MDTYPE="DC"]/parent::*')
@@ -105,8 +107,8 @@ class METSFile(object):
             # Only want SIP DC, not file DC
             div = root.find(
                 'structMap[@TYPE="physical"]/div/div[@TYPE="group"]')
-            #div = root.find(
-            #'structMap/div/div[@TYPE="Directory"][@LABEL="objects"]')
+            # div = root.find(
+            # 'structMap/div/div[@TYPE="Directory"][@LABEL="objects"]')
             dmdids = div.get('DMDID')
             # No SIP DC
             if dmdids is None:
@@ -115,25 +117,20 @@ class METSFile(object):
             for dmd in dmds[::-1]:  # Reversed
                 if dmd.get('ID') in dmdids:
                     dc_xml = dmd.find('mdWrap/xmlData/spar_dc')
-                    #dc_xml = dmd.find('mdWrap/xmlData/dublincore')
+                    # dc_xml = dmd.find('mdWrap/xmlData/dublincore')
                     break
             for elem in dc_xml:
                 dc_element = dict()
                 dc_element['element'] = elem.tag
                 dc_element['value'] = elem.text
 
-                #dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+                # dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
                 if elem.tag == 'relation':
                     dc_element['value'] = add_naan(elem.text)
 
                 if not dc_element['value'] is None:
                     dcmetadata.append(dc_element)
-        #Add identifiers description
-        #div = root.find('structMap[@TYPE="physical"]/div/div[@TYPE="group"]')
-        #amdids = div.get('ADMID')
-        #techMd = root.find(
-        #"""amdSec/techMD/mdWrap[@MDTYPE="PREMIS:OBJECT"]/xmlData/
-        #object[#@{http://www.w3.org/2001/XMLSchema-instance}type="premis:representation"]""")
+        # Add identifiers description
         techmd = root.find('amdSec/techMD/mdWrap[@MDTYPE="PREMIS:OBJECT"]/xmlData/object')
         premis_identifiers = {
             'ark identifier':
@@ -147,9 +144,9 @@ class METSFile(object):
                 'relationship[relationshipSubType="channel"]/relatedObjectIdentification/'
                 'relatedObjectIdentifierValue'
         }
-        if not techmd is None:
+        if techmd is not None:
             for key, value in premis_identifiers.items():
-                print("THL identifiers", key, file=sys.stderr)
+                # print("THL identifiers", key, file=sys.stderr)
                 dc_element = dict()
                 dc_element['element'] = key
                 value = techmd.find(value).text
@@ -158,9 +155,6 @@ class METSFile(object):
                         self.ark = value
                     dc_element['value'] = add_naan(value)
                     dcmetadata.append(dc_element)
-        #else:
-            #toto = root.find("amdSec/techMD/mdWrap[@MDTYPE='PREMIS:OBJECT']/xmlData/object")
-            # print("THL", toto.tag, toto.attrib, file=sys.stderr)
 
         return dcmetadata
 
@@ -170,7 +164,7 @@ class METSFile(object):
             target = element.xpath(value, namespaces=self.NAMESPACES)
             if target is None:
                 continue
-            #print("THL find", target, file=sys.stderr)
+            # print("THL find", target, file=sys.stderr)
             if target and isinstance(target, str):
                 data['{}'.format(key)] = target
                 continue
@@ -189,11 +183,11 @@ class METSFile(object):
             'version': './object/objectCharacteristics/format/formatDesignation/formatVersion',
             'arkFormat': './object/objectCharacteristics/format/formatRegistry/formatRegistryKey'
         }
-        # iterate over elements and write key, value for each to premis_event dictionary
+        # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, xml_file_elements)
 
-    def parse_file_premis_event(self, element):
-        """parse premis events related to file"""
+    def parse_premis_event(self, element):
+        """parse a premis event"""
         # create dict for names and xpaths of desired elements
         premis_key_values = {
             'event_uuid': './event/eventIdentifier/eventIdentifierValue',
@@ -204,10 +198,25 @@ class METSFile(object):
             'event_detail_note':
                 './event/eventOutcomeInformation/eventOutcomeDetail/eventOutcomeDetailNote'
         }
+        agent_key_values = {
+            'agent_type': './linkingAgentIdentifierType',
+            'agent_value': './linkingAgentIdentifierValue',
+            'agent_role': './linkingAgentRole'
+        }
         # create dict to store data
         premis_event = dict()
         # iterate over elements and write key, value for each to premis_event dictionary
         self.parse_element_with_given_xpaths(element, premis_event, premis_key_values)
+
+        # agents
+        agents = element.xpath('./event/linkingAgentIdentifier', namespaces=self.NAMESPACES)
+        if agents:
+            premis_event['premis_agents'] = []
+            for agent in agents:
+                my_agent = dict()
+                self.parse_element_with_given_xpaths(agent, my_agent, agent_key_values)
+                premis_event['premis_agents'].append(my_agent)
+
         return premis_event
 
     def parse_file_mix(self, element, file_data):
@@ -219,7 +228,7 @@ class METSFile(object):
             'mix_width': './mix//imageWidth',
             'mix_bitsPerSample': './mix//bitsPerSampleValue'
         }
-        # iterate over elements and write key, value for each to premis_event dictionary
+        # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['mix_present'] = 'yes'
 
@@ -231,7 +240,7 @@ class METSFile(object):
             'textmd_markup_basis': './textMD/markup_basis',
             'textmd_markup_language': './textMD/markup_language'
         }
-        # iterate over elements and write key, value for each to premis_event dictionary
+        # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['textmd_present'] = 'yes'
 
@@ -248,7 +257,7 @@ class METSFile(object):
                 '@rdf:resource="http://id.loc.gov/vocabulary/preservation/agentType/sof"]/'
                 'hasAgentName'
         }
-        # iterate over elements and write key, value for each to premis_event dictionary
+        # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['xmp_present'] = 'yes'
 
@@ -258,7 +267,7 @@ class METSFile(object):
         key_values = {
             'containermd_entries_number': './containerMD//entriesInformation/@number'
         }
-        # iterate over elements and write key, value for each to premis_event dictionary
+        # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['containermd_present'] = 'yes'
 
@@ -273,9 +282,116 @@ class METSFile(object):
             'mpeg7_video_samplerate': './Mpeg7//VideoCoding/Sample/@rate',
             'mpeg7_duration': './Mpeg7//MediaDuration',
         }
-        # iterate over elements and write key, value for each to premis_event dictionary
+        # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['mpeg7_present'] = 'yes'
+
+    def extract_file_info(self, target, mets_root):
+        """extract information about the file in target"""
+        # create new dictionary for this item's info
+        file_data = dict()
+        # Add information from the file
+        file_data['id'] = target.attrib['ID']  # default value
+        file_data['use'] = target.find('..').get('USE')
+        file_data['filepath'] = target.find('FLocat').get('{http://www.w3.org/1999/xlink}href')
+        file_data['hashtype'] = target.attrib['CHECKSUMTYPE']
+        file_data['hashvalue'] = target.attrib['CHECKSUM']
+        file_data['bytes'] = target.attrib['SIZE']
+        file_data['format'] = target.get('MIMETYPE')  # default value
+
+        # create new list of dicts for premis events in file_data
+        file_data['premis_events'] = list()
+
+        # gather amdsec id from filesec
+        amdsec_ids = target.get('ADMID', '')
+        file_data['amdsec_id'] = amdsec_ids
+        for amdsec_id in amdsec_ids.split(" "):
+            # parse amdSec
+            amdsec_xpath = ".//amdSec/*[@ID='{}']".format(amdsec_id)
+            # Only one section per ID
+            section = mets_root.find(amdsec_xpath)
+            if section is None:
+                continue
+            # is it a PREMIS:OBJECT section
+            premis_object = section.find("./mdWrap[@MDTYPE='PREMIS:OBJECT']/xmlData")
+            if premis_object is not None:
+                self.parse_file_premis_object(premis_object, file_data)
+                continue
+            # parse premis events related to file
+            premis_event = section.find("./mdWrap[@MDTYPE='PREMIS:EVENT']/xmlData")
+            if premis_event is not None:
+                file_data['premis_events'].append(self.parse_premis_event(premis_event))
+                continue
+            # parse mix related to file
+            mix = section.find("./mdWrap[@MDTYPE='NISOIMG']/xmlData")
+            if mix is not None:
+                self.parse_file_mix(mix, file_data)
+                # file_data['mix_rawoutput'] = etree.tostring(mix, pretty_print=True)
+                continue
+            # parse textMD related to file
+            textmd = section.find("./mdWrap[@MDTYPE='TEXTMD']/xmlData")
+            if textmd is not None:
+                self.parse_file_textmd(textmd, file_data)
+                # file_data['textmd_rawoutput'] = etree.tostring(textmd, pretty_print=True)
+                continue
+            # parse mpeg7 related to file
+            mpeg7 = section.find("./mdWrap[@OTHERMDTYPE='MPEG7']/xmlData")
+            if mpeg7 is not None:
+                self.parse_file_mpeg7(mpeg7, file_data)
+                continue
+            # parse containerMD related to file
+            containermd = section.find("./mdWrap[@OTHERMDTYPE='containerMD']/xmlData")
+            if containermd is not None:
+                self.parse_file_containermd(containermd, file_data)
+                continue
+            # parse XMP related to file
+            xmp = section.find("./mdWrap[@OTHERMDTYPE='XMP']/xmlData")
+            if xmp is not None:
+                self.parse_file_xmp(xmp, file_data)
+
+        # create human-readable size
+        file_data['bytes'] = int(file_data['bytes'])
+        file_data['size'] = '0 bytes'  # default to none
+        if file_data['bytes'] != 0:
+            file_data['size'] = convert_size(file_data['bytes'])
+
+        # create human-readable version of last modified Unix time stamp
+        # (if file was characterized by FITS)
+        if 'fits_modified_unixtime' in file_data:
+            # convert milliseconds to seconds
+            unixtime = int(file_data['fits_modified_unixtime'])/1000
+            # convert from unix to iso8601
+            file_data['modified_ois'] = datetime.datetime.fromtimestamp(unixtime).isoformat()
+        else:
+            file_data['modified_ois'] = ''
+
+        # Return the build dictionnary
+        return file_data
+
+    def extract_group_event(self, mets_root, dcmetadata):
+        """
+        Extract premis events related to the group level
+        """
+        div = mets_root.find(
+            'structMap[@TYPE="physical"]/div/div[@TYPE="group"]')
+        if div is None:
+            return
+
+        amdsec_ids = div.get('ADMID', '')
+        for amdsec_id in amdsec_ids.split(" "):
+            # parse amdSec
+            amdsec_xpath = ".//amdSec/*[@ID='{}']".format(amdsec_id)
+            # Only one section per ID
+            section = mets_root.find(amdsec_xpath)
+            if section is None:
+                continue
+            # parse premis events related to group
+            premis_event = section.find("./mdWrap[@MDTYPE='PREMIS:EVENT']/xmlData")
+            if premis_event is not None:
+                myEvent = self.parse_premis_event(premis_event)
+                myEvent['event'] = 'premis'
+                dcmetadata.append(myEvent)
+                continue
 
     def parse_mets(self):
         """
@@ -306,89 +422,20 @@ class METSFile(object):
 
         # gather info for each file"
         for target in mets_root.findall(".//fileGrp/file"):
-
             original_file_count += 1
-
             # create new dictionary for this item's info
-            file_data = dict()
-            # Add information from the file
-            file_data['use'] = target.find('..').get('USE')
-            file_data['filepath'] = target.find('FLocat').get('{http://www.w3.org/1999/xlink}href')
-            file_data['hashtype'] = target.attrib['CHECKSUMTYPE']
-            file_data['hashvalue'] = target.attrib['CHECKSUM']
-            file_data['bytes'] = target.attrib['SIZE']
-
-            # create new list of dicts for premis events in file_data
-            file_data['premis_events'] = list()
-
-            # gather amdsec id from filesec
-            amdsec_ids = target.attrib['ADMID']
-            file_data['amdsec_id'] = amdsec_ids
-            for amdsec_id in amdsec_ids.split(" "):
-                # parse amdSec
-                amdsec_xpath = ".//amdSec/*[@ID='{}']".format(amdsec_id)
-                # Only one section per ID
-                section = mets_root.find(amdsec_xpath)
-                # is it a PREMIS:OBJECT section
-                premis_object = section.find("./mdWrap[@MDTYPE='PREMIS:OBJECT']/xmlData")
-                if not premis_object is None:
-                    self.parse_file_premis_object(premis_object, file_data)
-                    continue
-                # parse premis events related to file
-                premis_event = section.find("./mdWrap[@MDTYPE='PREMIS:EVENT']/xmlData")
-                if not premis_event is None:
-                    file_data['premis_events'].append(self.parse_file_premis_event(premis_event))
-                    continue
-                # parse mix related to file
-                mix = section.find("./mdWrap[@MDTYPE='NISOIMG']/xmlData")
-                if not mix is None:
-                    self.parse_file_mix(mix, file_data)
-                    #file_data['mix_rawoutput'] = etree.tostring(mix, pretty_print=True)
-                    continue
-                # parse textMD related to file
-                textmd = section.find("./mdWrap[@MDTYPE='TEXTMD']/xmlData")
-                if not textmd is None:
-                    self.parse_file_textmd(textmd, file_data)
-                    #file_data['textmd_rawoutput'] = etree.tostring(textmd, pretty_print=True)
-                    continue
-                # parse mpeg7 related to file
-                mpeg7 = section.find("./mdWrap[@OTHERMDTYPE='MPEG7']/xmlData")
-                if not mpeg7 is None:
-                    self.parse_file_mpeg7(mpeg7, file_data)
-                    continue
-                # parse containerMD related to file
-                containermd = section.find("./mdWrap[@OTHERMDTYPE='containerMD']/xmlData")
-                if not containermd is None:
-                    self.parse_file_containermd(containermd, file_data)
-                    continue
-                # parse XMP related to file
-                xmp = section.find("./mdWrap[@OTHERMDTYPE='XMP']/xmlData")
-                if not xmp is None:
-                    self.parse_file_xmp(xmp, file_data)
-
-            # create human-readable size
-            file_data['bytes'] = int(file_data['bytes'])
-            file_data['size'] = '0 bytes' # default to none
-            if file_data['bytes'] != 0:
-                file_data['size'] = convert_size(file_data['bytes'])
-
-            # create human-readable version of last modified Unix time stamp
-            # (if file was characterized by FITS)
-            if 'fits_modified_unixtime' in file_data:
-                # convert milliseconds to seconds
-                unixtime = int(file_data['fits_modified_unixtime'])/1000
-                # convert from unix to iso8601
-                file_data['modified_ois'] = datetime.datetime.fromtimestamp(unixtime).isoformat()
-            else:
-                file_data['modified_ois'] = ''
-
+            file_data = self.extract_file_info(target, mets_root)
             # append file_data to original files
             original_files.append(file_data)
 
         # gather dublin core metadata from most recent dmdSec
         dc_metadata = self.parse_dc(root)
+        # gather event at the group level
+        self.extract_group_event(root, dc_metadata)
 
         # add file info to database
+        if not self.ark:
+            self.ark = mets_filename
         if self.nickname is None or not self.nickname:
             self.nickname = self.ark
         else:
