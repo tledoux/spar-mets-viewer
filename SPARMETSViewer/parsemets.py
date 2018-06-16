@@ -9,6 +9,7 @@ import sys
 
 from flask_babel import gettext
 from lxml import etree, objectify
+from sqlalchemy.exc import IntegrityError
 
 from SPARMETSViewer import db
 from .models import METS
@@ -27,8 +28,11 @@ def convert_size(size):
 
 def add_naan(ark):
     """Add links to known ARKs identifier"""
-    if ark.startswith('ark:/12148/c'):
+    if ark.startswith('ark:/12148/cb'):
         myurl = "http://catalogue.bnf.fr/%s" % ark
+        return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl, ark)
+    if ark.startswith('ark:/12148/cc'):
+        myurl = "http://archivesetmanuscrits.bnf.fr/%s" % ark
         return "<a href=\"%s\" target=\"_blank\">%s</a>" % (myurl, ark)
     if ark.startswith('ark:/12148/bpt6k') or ark.startswith('ark:/12148/bttv'):
         myurl = "http://gallicaintramuros.bnf.fr/%s" % ark
@@ -88,6 +92,13 @@ class METSFile(object):
     def __str__(self):
         return self.path
 
+    def strip_prefix(self, value):
+        i = value.find(':')
+        if i >= 0:
+            return value[i+1:]
+        else:
+            return value
+
     def parse_dc(self, root):
         """
         Parse group-level Dublin Core metadata and PREMIS:OBJECT identifiers into
@@ -120,15 +131,30 @@ class METSFile(object):
                     # dc_xml = dmd.find('mdWrap/xmlData/dublincore')
                     break
             for elem in dc_xml:
+                # Skip XML comments
+                if elem.tag is etree.Comment:
+                    continue
+                dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+
                 dc_element = dict()
-                dc_element['element'] = elem.tag
+                if dc_type is None:
+                    dc_element['element'] = elem.tag
+                else:
+                    if elem.tag in {'identifier', 'description', 'relation'}:
+                        annot = self.strip_prefix(dc_type)
+                        if annot == 'ark':
+                            dc_element['element'] = elem.tag
+                        else:
+                            # print("THL DC attrib", elem.tag, dc_type, file=sys.stderr)
+                            dc_element['element'] = elem.tag + ' (' + annot + ')'
+                    else:
+                        dc_element['element'] = elem.tag
                 dc_element['value'] = elem.text
 
-                # dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
                 if elem.tag == 'relation':
                     dc_element['value'] = add_naan(elem.text)
 
-                if not dc_element['value'] is None:
+                if dc_element['value'] is not None:
                     dcmetadata.append(dc_element)
         # Add identifiers description
         techmd = root.find('amdSec/techMD/mdWrap[@MDTYPE="PREMIS:OBJECT"]/xmlData/object')
@@ -297,6 +323,18 @@ class METSFile(object):
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['mpeg7_present'] = 'yes'
 
+    def parse_file_dc(self, element, file_data):
+        """parse spardc element related to file"""
+        # create dict for names and xpaths of desired elements
+        key_values = {
+            'title': './spar_dc/title',
+            'description': './spar_dc/description',
+            'source': './spar_dc/source'
+        }
+        # iterate over elements and write key, value for each to file_data dictionary
+        self.parse_element_with_given_xpaths(element, file_data, key_values)
+        file_data['dc_present'] = 'yes'
+
     def extract_file_info(self, target, mets_root):
         """extract information about the file in target"""
         # create new dictionary for this item's info
@@ -376,7 +414,22 @@ class METSFile(object):
         else:
             file_data['modified_ois'] = ''
 
-        # Return the build dictionnary
+        # gather amdsec id from filesec
+        dmdsec_ids = target.get('DMDID', '')
+        file_data['dmdsec_id'] = dmdsec_ids
+        for dmdsec_id in dmdsec_ids.split(" "):
+            # parse dmdSec
+            dmdsec_xpath = ".//dmdSec[@ID='{}']".format(dmdsec_id)
+            # Only one section per ID
+            section = mets_root.find(dmdsec_xpath)
+            if section is None:
+                continue
+            # parse DC related to file
+            dc = section.find("./mdWrap[@MDTYPE='DC']/xmlData")
+            if dc is not None:
+                self.parse_file_dc(dc, file_data)
+
+                # Return the build dictionnary
         return file_data
 
     def extract_group_event(self, mets_root, dcmetadata):
@@ -425,8 +478,9 @@ class METSFile(object):
                 continue
             i = elem.tag.find('}')
             if i >= 0:
+                # strip the namespace...
                 elem.tag = elem.tag[i+1:]
-        objectify.deannotate(root, cleanup_namespaces=True)
+        objectify.deannotate(root, cleanup_namespaces=True, xsi=False)
 
         # build xml document root
         mets_root = root
@@ -454,5 +508,13 @@ class METSFile(object):
 
         mets_instance = METS(mets_filename, self.nickname,
                              original_files, dc_metadata, original_file_count)
-        db.session.add(mets_instance)
-        db.session.commit()
+        isSuccess = True
+        try:
+            db.session.add(mets_instance)
+            db.session.flush()
+        except IntegrityError:
+            isSuccess = False
+            db.session.rollback()
+        else:
+            db.session.commit()
+        return isSuccess

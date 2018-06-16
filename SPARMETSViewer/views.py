@@ -2,7 +2,7 @@
 """Definition of the routes for the application."""
 import os
 
-from flask import request, render_template, flash
+from flask import request, render_template
 from flask_babel import gettext
 from werkzeug.utils import secure_filename
 
@@ -42,18 +42,19 @@ def render_page():
 @app.route('/uploadsuccess', methods=['GET', 'POST'])
 def upload_file():
     """Make the upload"""
+    error = None
     if request.method == 'POST':
         nickname = request.form.get("nickname")
         # check if the post request has the file part
         if 'file' not in request.files:
-            flash(gettext('No file part'))
-            return render_template('upload.html')
+            error = gettext('No file part')
+            return render_template('upload.html', error=error)
         file = request.files['file']
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            flash(gettext('No selected file'))
-            return render_template('upload.html')
+            error = gettext('No selected file')
+            return render_template('upload.html', error=error)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -62,13 +63,19 @@ def upload_file():
             mets_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             aip_name = os.path.basename(filename)
             mets = METSFile(mets_path, aip_name, nickname)
-            mets.parse_mets()
+            success = mets.parse_mets()
             # delete file from uploads folder
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return render_template('uploadsuccess.html')
+            if not success:
+                error = gettext('METS already exists')
+                return render_template('upload.html', error=error)
+            # Success back to index
+            mets_instances = METS.query.all()
+            success = gettext('Success! METS file uploaded!')
+            return render_template('index.html', mets_instances=mets_instances, success=success)
         else:
-            flash(gettext('Not allowed selected file'))
-            return render_template('upload.html')
+            error = gettext('Not allowed selected file')
+            return render_template('upload.html', error=error)
 
 
 # See https://www.ntu.edu.sg/home/ehchua/programming/webprogramming/Python3_Flask.html

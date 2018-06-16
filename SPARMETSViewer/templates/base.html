@@ -38,6 +38,14 @@
     </li>
   </ul>
 </nav>
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-warning">
+  <strong>{{ _('Error:') }}</strong> {{ error }}
+</div>
+{% endif %}
 <div class="container">
 {% block content %}{% endblock %}
 </div>

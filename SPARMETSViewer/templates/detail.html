@@ -17,6 +17,15 @@
 <p><strong>{{ _('Ark format:') }}</strong> {{ original_file['arkFormat']|safe }}</p>
 <p><strong>{{ _('amdSec ID:') }}</strong> {{ original_file['amdsec_id'] }}</p>
 <p><strong>{{ _('%(hashtype)s hash:', hashtype=original_file['hashtype']) }}</strong> {{ original_file['hashvalue'] }}</p>
+{% if original_file['title'] %}
+<p><strong>{{ _('Title:') }}</strong> {{ original_file['title'] }}</p>
+{% endif %}
+{% if original_file['description'] %}
+<p><strong>{{ _('Description:') }}</strong> {{ original_file['description'] }}</p>
+{% endif %}
+{% if original_file['source'] %}
+<p><strong>{{ _('Source:') }}</strong> {{ original_file['source'] }}</p>
+{% endif %}
 </div>
 </div>
 </div>

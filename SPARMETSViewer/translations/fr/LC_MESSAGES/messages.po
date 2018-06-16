@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-06-09 15:15+0200\n"
+"POT-Creation-Date: 2018-06-16 16:05+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -16,91 +16,111 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.5.3\n"
+"Generated-By: Babel 2.6.0\n"
 
-#: SPARMETSViewer/parsemets.py:62
+#: SPARMETSViewer/parsemets.py:76 SPARMETSViewer/templates/detail.html:24
 msgid "Title:"
 msgstr "Titre :"
 
-#: SPARMETSViewer/parsemets.py:62
+#: SPARMETSViewer/parsemets.py:76
 msgid "Subject:"
 msgstr "Sujet :"
 
-#: SPARMETSViewer/parsemets.py:62
+#: SPARMETSViewer/parsemets.py:76
 msgid "Description:"
 msgstr "Description :"
 
-#: SPARMETSViewer/parsemets.py:62
+#: SPARMETSViewer/parsemets.py:76 SPARMETSViewer/templates/detail.html:21
 msgid "Source:"
 msgstr "Source :"
 
-#: SPARMETSViewer/parsemets.py:63
+#: SPARMETSViewer/parsemets.py:77
 msgid "Language:"
 msgstr "Langue :"
 
-#: SPARMETSViewer/parsemets.py:63
+#: SPARMETSViewer/parsemets.py:77
 msgid "Relation:"
 msgstr "Relation :"
 
-#: SPARMETSViewer/parsemets.py:64
+#: SPARMETSViewer/parsemets.py:78
 msgid "Coverage:"
 msgstr "Couverture :"
 
-#: SPARMETSViewer/parsemets.py:64
+#: SPARMETSViewer/parsemets.py:78
 msgid "Creator:"
 msgstr "Auteur :"
 
-#: SPARMETSViewer/parsemets.py:64
+#: SPARMETSViewer/parsemets.py:78
 msgid "Contributor:"
 msgstr "Contributeur :"
 
-#: SPARMETSViewer/parsemets.py:64
+#: SPARMETSViewer/parsemets.py:78
 msgid "Publisher:"
 msgstr "Editeur :"
 
-#: SPARMETSViewer/parsemets.py:65
+#: SPARMETSViewer/parsemets.py:79
 msgid "Rights:"
 msgstr "Droits :"
 
-#: SPARMETSViewer/parsemets.py:65
+#: SPARMETSViewer/parsemets.py:79
 msgid "Date:"
 msgstr "Date :"
 
-#: SPARMETSViewer/parsemets.py:65
+#: SPARMETSViewer/parsemets.py:79
 msgid "Type:"
 msgstr "Type :"
 
-#: SPARMETSViewer/parsemets.py:65
+#: SPARMETSViewer/parsemets.py:80
 msgid "Format:"
 msgstr "Format :"
 
-#: SPARMETSViewer/parsemets.py:65
+#: SPARMETSViewer/parsemets.py:80
 msgid "Identifier:"
 msgstr "Identifiant :"
 
-#: SPARMETSViewer/parsemets.py:66
+#: SPARMETSViewer/parsemets.py:81
 msgid "Audience:"
 msgstr "Audience :"
 
-#: SPARMETSViewer/parsemets.py:66
+#: SPARMETSViewer/parsemets.py:81
 msgid "Provenance:"
 msgstr "Provenance :"
 
-#: SPARMETSViewer/parsemets.py:67
+#: SPARMETSViewer/parsemets.py:82
 msgid "Ark Identifier:"
 msgstr "Identifiant ARK :"
 
-#: SPARMETSViewer/parsemets.py:67
+#: SPARMETSViewer/parsemets.py:82
 msgid "Production Identifier:"
 msgstr "Identifiant de production :"
 
-#: SPARMETSViewer/parsemets.py:67
+#: SPARMETSViewer/parsemets.py:83
 msgid "Version Identifier:"
 msgstr "Identifiant de version :"
 
-#: SPARMETSViewer/parsemets.py:67
+#: SPARMETSViewer/parsemets.py:83
 msgid "Channel Identifier:"
 msgstr "Identifiant de chaîne :"
+
+#: SPARMETSViewer/views.py:50
+msgid "No file part"
+msgstr "Pas de fichier"
+
+#: SPARMETSViewer/views.py:56
+msgid "No selected file"
+msgstr "Pas de fichier séléctionné"
+
+#: SPARMETSViewer/views.py:70
+msgid "METS already exists"
+msgstr "Le fichier METS existe déjà"
+
+#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:74
+msgid "Success! METS file uploaded!"
+msgstr "Succès ! Fichier METS téléchargé !"
+
+#: SPARMETSViewer/views.py:77
+msgid "Not allowed selected file"
+msgstr "Fichier sélectionné non autorisé"
 
 #: SPARMETSViewer/templates/aip.html:3
 msgid "AIP ID:"
@@ -115,58 +135,102 @@ msgstr "Fichier METS :"
 msgid "Descriptive metadata"
 msgstr "Métadonnées descriptives"
 
-#: SPARMETSViewer/templates/aip.html:20
+#: SPARMETSViewer/templates/aip.html:21
+#: SPARMETSViewer/templates/detail.html:120
+msgid "PREMIS Events"
+msgstr "Evénements PREMIS"
+
+#: SPARMETSViewer/templates/aip.html:27
+#: SPARMETSViewer/templates/detail.html:125
+msgid "Event UUID:"
+msgstr "Evénement UUID :"
+
+#: SPARMETSViewer/templates/aip.html:28
+#: SPARMETSViewer/templates/detail.html:126
+msgid "Event type:"
+msgstr "Type :"
+
+#: SPARMETSViewer/templates/aip.html:29
+#: SPARMETSViewer/templates/detail.html:127
+msgid "Event datetime:"
+msgstr "Date :"
+
+#: SPARMETSViewer/templates/aip.html:31
+#: SPARMETSViewer/templates/detail.html:129
+msgid "Event detail:"
+msgstr "Détail :"
+
+#: SPARMETSViewer/templates/aip.html:34
+#: SPARMETSViewer/templates/detail.html:132
+msgid "Event outcome:"
+msgstr "Sortie :"
+
+#: SPARMETSViewer/templates/aip.html:37
+#: SPARMETSViewer/templates/detail.html:135
+msgid "Event detail note:"
+msgstr "Notes détaillées :"
+
+#: SPARMETSViewer/templates/aip.html:40
+#: SPARMETSViewer/templates/detail.html:138
+msgid "PREMIS Agent"
+msgstr "Agent PREMIS"
+
+#: SPARMETSViewer/templates/aip.html:55
 #, python-format
 msgid "Files (count: %(fc)s)"
 msgstr "Fichiers (nombre : %(fc)s)"
 
-#: SPARMETSViewer/templates/aip.html:21 SPARMETSViewer/templates/index.html:11
+#: SPARMETSViewer/templates/aip.html:56 SPARMETSViewer/templates/index.html:11
 msgid "Click on any column header to sort the table by that value."
 msgstr "Cliquer sur les entêtes de colonne pour trier la table."
 
-#: SPARMETSViewer/templates/aip.html:34 SPARMETSViewer/templates/index.html:24
+#: SPARMETSViewer/templates/aip.html:69 SPARMETSViewer/templates/index.html:24
 msgid "en"
 msgstr "fr"
 
-#: SPARMETSViewer/templates/aip.html:41
+#: SPARMETSViewer/templates/aip.html:76
 msgid "Filepath"
 msgstr "Chemin"
 
-#: SPARMETSViewer/templates/aip.html:42
+#: SPARMETSViewer/templates/aip.html:77
 msgid "Format"
 msgstr "Format"
 
-#: SPARMETSViewer/templates/aip.html:43
+#: SPARMETSViewer/templates/aip.html:78
 msgid "Version"
 msgstr "Version"
 
-#: SPARMETSViewer/templates/aip.html:44
+#: SPARMETSViewer/templates/aip.html:79
 msgid "arkFormat"
 msgstr "Ark du format"
 
-#: SPARMETSViewer/templates/aip.html:45
+#: SPARMETSViewer/templates/aip.html:80
 msgid "Size (bytes)"
 msgstr "Taille (octets)"
 
-#: SPARMETSViewer/templates/aip.html:46
+#: SPARMETSViewer/templates/aip.html:81
 msgid "USE"
 msgstr "USE"
 
-#: SPARMETSViewer/templates/aip.html:47
+#: SPARMETSViewer/templates/aip.html:82
 msgid "ID"
 msgstr "ID"
 
-#: SPARMETSViewer/templates/aip.html:48
+#: SPARMETSViewer/templates/aip.html:83
 msgid "Details"
 msgstr "Détails"
 
-#: SPARMETSViewer/templates/aip.html:61 SPARMETSViewer/templates/index.html:39
+#: SPARMETSViewer/templates/aip.html:96 SPARMETSViewer/templates/index.html:39
 msgid "View"
 msgstr "Voir"
 
 #: SPARMETSViewer/templates/base.html:37
 msgid "Upload"
 msgstr "Téléchargement"
+
+#: SPARMETSViewer/templates/base.html:46
+msgid "Error:"
+msgstr "Erreur :"
 
 #: SPARMETSViewer/templates/delete.html:4
 msgid "Are you sure you want to delete METS file?"
@@ -229,125 +293,85 @@ msgstr "amdSec ID :"
 msgid "%(hashtype)s hash:"
 msgstr "Hash %(hashtype)s :"
 
-#: SPARMETSViewer/templates/detail.html:25
+#: SPARMETSViewer/templates/detail.html:31
 msgid "Detailed identification"
 msgstr "Identification détaillée"
 
-#: SPARMETSViewer/templates/detail.html:33
+#: SPARMETSViewer/templates/detail.html:39
 msgid "Dimension:"
 msgstr "Dimension :"
 
-#: SPARMETSViewer/templates/detail.html:36
+#: SPARMETSViewer/templates/detail.html:42
 msgid "Height:"
 msgstr "Hauteur :"
 
-#: SPARMETSViewer/templates/detail.html:39
+#: SPARMETSViewer/templates/detail.html:45
 msgid "Width:"
 msgstr "Largeur :"
 
-#: SPARMETSViewer/templates/detail.html:42
+#: SPARMETSViewer/templates/detail.html:48
 msgid "Bits per sample:"
 msgstr "Bits par échantillon :"
 
-#: SPARMETSViewer/templates/detail.html:45
+#: SPARMETSViewer/templates/detail.html:51
 msgid "Mix output:"
 msgstr "Sortie Mix :"
 
-#: SPARMETSViewer/templates/detail.html:53
+#: SPARMETSViewer/templates/detail.html:59
 msgid "Charset:"
 msgstr "Charset :"
 
-#: SPARMETSViewer/templates/detail.html:56
+#: SPARMETSViewer/templates/detail.html:62
 msgid "Markup basis:"
 msgstr "Type de balise :"
 
-#: SPARMETSViewer/templates/detail.html:59
+#: SPARMETSViewer/templates/detail.html:65
 msgid "Markup language:"
 msgstr "Dialecte des balises :"
 
-#: SPARMETSViewer/templates/detail.html:62
+#: SPARMETSViewer/templates/detail.html:68
 msgid "TextMD output:"
 msgstr "Sortie TextMD :"
 
-#: SPARMETSViewer/templates/detail.html:70
+#: SPARMETSViewer/templates/detail.html:76
 msgid "Number of entries:"
 msgstr "Nombre d'entrées :"
 
-#: SPARMETSViewer/templates/detail.html:77
+#: SPARMETSViewer/templates/detail.html:83
 msgid "Media Format:"
 msgstr "Format du media :"
 
-#: SPARMETSViewer/templates/detail.html:80
+#: SPARMETSViewer/templates/detail.html:86
 msgid "Audio format:"
 msgstr "Format audio :"
 
-#: SPARMETSViewer/templates/detail.html:83
+#: SPARMETSViewer/templates/detail.html:89
 msgid "Audio Rate:"
 msgstr "Débit audio :"
 
-#: SPARMETSViewer/templates/detail.html:86
+#: SPARMETSViewer/templates/detail.html:92
 msgid "Video format:"
 msgstr "Format Vidéo :"
 
-#: SPARMETSViewer/templates/detail.html:89
+#: SPARMETSViewer/templates/detail.html:95
 msgid "Video Rate:"
 msgstr "Débit Vidéo :"
 
-#: SPARMETSViewer/templates/detail.html:92
+#: SPARMETSViewer/templates/detail.html:98
 msgid "Duration:"
 msgstr "Durée :"
 
-#: SPARMETSViewer/templates/detail.html:99
+#: SPARMETSViewer/templates/detail.html:105
 msgid "Encryption:"
 msgstr "Cryptage :"
 
-#: SPARMETSViewer/templates/detail.html:102
+#: SPARMETSViewer/templates/detail.html:108
 msgid "Validation agent:"
 msgstr "Agent de validation :"
 
-#: SPARMETSViewer/templates/detail.html:105
+#: SPARMETSViewer/templates/detail.html:111
 msgid "XMP output:"
 msgstr "Sortie XMP :"
-
-#: SPARMETSViewer/templates/detail.html:114
-msgid "PREMIS Events"
-msgstr "Evénements PREMIS"
-
-#: SPARMETSViewer/templates/detail.html:119
-msgid "Event UUID:"
-msgstr "Evénement UUID :"
-
-#: SPARMETSViewer/templates/detail.html:120
-msgid "Event type:"
-msgstr "Type :"
-
-#: SPARMETSViewer/templates/detail.html:121
-msgid "Event datetime:"
-msgstr "Date :"
-
-#: SPARMETSViewer/templates/detail.html:123
-msgid "Event detail:"
-msgstr "Détail :"
-
-#: SPARMETSViewer/templates/detail.html:126
-msgid "Event outcome:"
-msgstr "Sortie :"
-
-#: SPARMETSViewer/templates/detail.html:129
-msgid "Event detail note:"
-msgstr "Notes détaillées :"
-
-#: SPARMETSViewer/templates/detail.html:132
-msgid "PREMIS Agent"
-msgstr ""
-
-#: SPARMETSViewer/templates/detail.html:133
-msgid "Agent type:"
-msgstr ""
-
-#: SPARMETSViewer/templates/detail.html:134
-msgid "Agent value:"
-msgstr ""
 
 #: SPARMETSViewer/templates/index.html:4
 msgid "A web application for human-friendly exploration of SPAR METS files"
@@ -406,10 +430,6 @@ msgstr ""
 #: SPARMETSViewer/templates/upload.html:15
 msgid "Submit"
 msgstr "Soumettre"
-
-#: SPARMETSViewer/templates/uploadsuccess.html:3
-msgid "Success! METS file uploaded!"
-msgstr "Succès ! Fichier METS téléchargé !"
 
 #: SPARMETSViewer/templates/uploadsuccess.html:5
 msgid "Return home/view your METS file"
