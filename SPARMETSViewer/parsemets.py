@@ -414,7 +414,7 @@ class METSFile(object):
         else:
             file_data['modified_ois'] = ''
 
-        # gather amdsec id from filesec
+        # gather dmdsec id from filesec
         dmdsec_ids = target.get('DMDID', '')
         file_data['dmdsec_id'] = dmdsec_ids
         for dmdsec_id in dmdsec_ids.split(" "):
@@ -429,7 +429,7 @@ class METSFile(object):
             if dc is not None:
                 self.parse_file_dc(dc, file_data)
 
-                # Return the build dictionnary
+        # Return the build dictionnary
         return file_data
 
     def extract_group_event(self, mets_root, dcmetadata):
