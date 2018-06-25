@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+  <script src="static/js/d3.v3.min.js"></script>
+  <script src="static/js/d3sparql.js"></script>
+  
+  <div class="well">
+  <p>{{ _('Fill in the fields to make a query on the platform %(platform)s.', platform=access_platform) }}</p>
+  </div>
+  <form class="form-control" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="channel" class="control-label col-sm-2">{{ _('Channel') }}</label>
+      <!--
+SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
+  ?c a sparcontext:channel.
+  ?c owl:sameAs ?uri.
+} ORDER BY ?uri LIMIT 100
+      -->
+      <select id="channel">
+        <option value="ark:/12148/br2d2f5z">fil_addn_a</option>
+        <option value="ark:/12148/br2d2f66">fil_addn_b</option>
+        <option value="ark:/12148/br2d26qc">fil_aud_b</option>
+        <option value="ark:/12148/br2d2bzw">fil_aud_d</option>
+        <option value="ark:/12148/br2d28qs">fil_dl_auto_cac</option>
+        <option value="ark:/12148/br2d28r1">fil_dl_auto_cia</option>
+        <option value="ark:/12148/br2d28s8">fil_dl_auto_his</option>
+        <option value="ark:/12148/br2d28th">fil_dl_auto_htt</option>
+        <option value="ark:/12148/br2d28pj">fil_dl_auto_nas</option>
+        <option value="ark:/12148/br2d293n">fil_dl_nego_agf01</option>
+        <option value="ark:/12148/br2d2c88">fil_dl_nego_livnum_a</option>
+        <option value="ark:/12148/br2d2c9h">fil_dl_nego_livnum_b</option>
+        <option value="ark:/12148/br2d22g" selected="selected">fil_num_cons_a</option>
+        <option value="ark:/12148/br2d2bxn">fil_num_cons_b</option>
+        <option value="ark:/12148/br2d2csw">fil_num_cons_c</option>
+        <option value="ark:/12148/br2d2f10">fil_num_cons_d</option>
+        <option value="ark:/12148/br2d2f27">fil_num_cons_e</option>
+        <option value="ark:/12148/br2d2f8p">fil_num_cons_f</option>
+        <option value="ark:/12148/br2d2b1c">fil_prod_adm_a</option>
+        <option value="ark:/12148/br2d230p">fil_ref_agent</option>
+        <option value="ark:/12148/br2d231x">fil_ref_channel</option>
+        <option value="ark:/12148/br2d26rm">fil_ref_collection</option>
+        <option value="ark:/12148/br2d22z7">fil_ref_format</option>
+        <option value="ark:/12148/br2d2325">fil_ref_ontology</option>
+        <option value="ark:/12148/br2d2c2t">fil_ref_test</option>
+        <option value="ark:/12148/br2d290x">fil_ta_cnacgp01</option>
+        <option value="ark:/12148/br2d2cd7">fil_ta_mnpp01</option>
+        <option value="ark:/12148/br2d2dkn">fil_ta_mqb01</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="origin_id" class="control-label col-sm-2">{{ _('Origin identifier') }}</label>
+      <input type="text" name="origin_id" id="origin_id" placeholder="206840"/>
+    </div>
+    <div class="form-group">
+      <label for="title" class="control-label col-sm-2">{{ _('Title') }}</label>
+      <input type="text" name="title" id="title" placeholder="Mon titre"/>
+    </div>
+    <div class="form-group">
+      <label for="type" class="control-label col-sm-2">{{ _('Type') }}</label>
+      <input type="text" name="type" id="type" placeholder="monograph"/>
+    </div>
+    <button class="btn btn-primary" type="button" onclick="exec()">{{ _('Submit') }}</button>
+  </form>
+  <hr />
+  <!-- TODO replace by a table -->
+  <div id="result"></div>
+  <script>
+    function exec() {
+      var endpoint = "/sparql"
+      // Retrieve the fields
+      var channel = d3.select("#channel").property("value")
+      var originId = d3.select("#origin_id").property("value")
+      var type = d3.select("#type").property("value")
+      var title = d3.select("#title").property("value")
+      // Build the SPARQL
+      var sparql = "SELECT " +
+        "?ark (?prodId AS ?identifiant) ?titre WHERE { " +
+        "?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p." +
+        "GRAPH ?g {" +
+        "?p a sparstructure:group. " +
+        "?p sparcontext:isMemberOf <" + channel + ">." +
+        "?p sparreference:productionIdentifier ?prodId." +
+        "OPTIONAL {?p dc:title ?titre}" +
+        "OPTIONAL {?p dc:type ?type}"
+      if (originId) {
+        sparql += "?p sparreference:productionIdentifier \"" + originId + "\"."
+      }
+      if (type) {
+        sparql += "?p dc:type \"" + type + "\"."
+      }
+      if (title) {
+        sparql += " FILTER(CONTAINS(?titre, \"" + title + "\"))"
+      }
+      sparql += "} }"
+      console.log("SPARQL [" + endpoint + "]: " + sparql)
+      // Launch the query and invoke render() when results arrived
+      d3sparql.query(endpoint, sparql, render)
+    }
+    
+    function render(json) {
+      var config = {
+        "selector": "#result"
+      }
+      d3sparql.htmltable(json, config)
+      
+      // Now add the detail column
+      var myTable = d3.select("#result").select("div").select("table")
+      myTable.select("thead").select("tr").append("th").style({"background": "#eeeeee","text-transform": "capitalize"}).text("{{ _('Details') }}")
+      var myRows = myTable.select("tbody").selectAll("tr")
+      var myCells = myRows.append("td").append("a").attr("href",function(val) { console.log(val); return "/upload?ark=" + val.ark.value }).append("button").attr("class", "btn btn-primary").insert("span").attr("class", "fa fa-arrow-circle-down").text(" {{ _('Upload') }}")
+    }
+    // 
+  </script>
+{% endblock %}
+
+

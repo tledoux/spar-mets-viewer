@@ -207,7 +207,7 @@ class METSFile(object):
                 continue
             if target and isinstance(target, list):
                 if isinstance(target[0], etree._Element):
-                    data['{}'.format(key)] = target[0].text
+                    data['{}'.format(key)] = add_naan(target[0].text)
                 else:
                     data['{}'.format(key)] = target[0]
 
@@ -345,7 +345,7 @@ class METSFile(object):
         file_data['filepath'] = target.find('FLocat').get('{http://www.w3.org/1999/xlink}href')
         file_data['hashtype'] = target.attrib['CHECKSUMTYPE']
         file_data['hashvalue'] = target.attrib['CHECKSUM']
-        file_data['bytes'] = target.attrib['SIZE']
+        file_data['bytes'] = target.get('SIZE', '0')
         file_data['format'] = target.get('MIMETYPE')  # default value
 
         # create new list of dicts for premis events in file_data

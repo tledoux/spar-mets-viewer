@@ -56,8 +56,46 @@ def index():
 @app.route("/upload", methods=['GET', 'POST'])
 def render_page():
     """Access to the upload choice"""
+    if request.method == 'POST':
+        ark = request.form.get("ark")
+    else:
+        ark = request.args.get("ark", default="", type=str)
+    if ark is not None and ark.startswith(app.config['ARK_PREFIX']):
+        ark = ark.partition(app.config['ARK_PREFIX'])[2]
+
     return render_template(
         'upload.html',
+        ark=ark,
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=app.config['ACCESS_PLATFORM'])
+
+
+@app.route("/sparql", methods=['GET', 'POST'])
+def sparql_query():
+    """Make a SPARQL query"""
+    if request.method == 'POST':
+        query = request.form.get("query")
+    else:
+        query = request.args.get("query")
+    if query is None:
+        raise ValueError("No query")
+
+    endpoint = app.config['ACCESS_ENDPOINT']
+    # print("THL sparql", endpoint + " " + query, file=sys.stderr)
+
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    # print("THL sparql response", response.status_code, file=sys.stderr)
+    return response.content
+
+
+@app.route("/search", methods=['GET', 'POST'])
+def search_ark():
+    """Access to the search choice"""
+    return render_template(
+        'search.html',
         ark_prefix=app.config['ARK_PREFIX'],
         access_platform=app.config['ACCESS_PLATFORM'])
 

@@ -11,7 +11,10 @@
         <div class="input-group-prepend">
           <span class="input-group-text" id="ark-addon">{{ ark_prefix }}</span>
         </div>
-        <input type="text" class="form-control" name="ark" id="ark" aria-describedby="ark-addon" placeholder="br2d22g" pattern="b[0-9bcdfghijkmnpqrstvwxz]+" title= "{{ _('Valid ARK is in the form bxxxx.') }}"/>
+        <input type="text" class="form-control" name="ark" id="ark" aria-describedby="ark-addon" placeholder="br2d22g" pattern="b[0-9bcdfghijkmnpqrstvwxz]+" title= "{{ _('Valid ARK is in the form bxxxx.') }}" value="{{ ark }}" />
+        <div class="input-group-append">
+          <a class="btn btn-success" href="/search" role="button"><span class="fa fa-search"></span> {{ _('Search') }}</a>
+        </div>
       </div>
     </div>
      <button type="submit" class="btn btn-primary">{{ _('Submit') }}</button>
