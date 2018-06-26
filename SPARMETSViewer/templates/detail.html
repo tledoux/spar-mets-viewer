@@ -15,7 +15,7 @@
 <p><strong>{{ _('File format:') }}</strong> {{ original_file['format'] }}</p>
 <p><strong>{{ _('Version:') }}</strong> {{ original_file['version'] }}</p>
 <p><strong>{{ _('Ark format:') }}</strong> {{ original_file['arkFormat']|safe }}</p>
-<p><strong>{{ _('amdSec ID:') }}</strong> {{ original_file['amdsec_id'] }}</p>
+<!-- <p><strong>{{ _('amdSec ID:') }}</strong> {{ original_file['amdsec_id'] }}</p> -->
 <p><strong>{{ _('%(hashtype)s hash:', hashtype=original_file['hashtype']) }}</strong> {{ original_file['hashvalue'] }}</p>
 {% if original_file['title'] %}
 <p><strong>{{ _('Title:') }}</strong> {{ original_file['title'] }}</p>
@@ -125,8 +125,7 @@
 <div class="collapse show" id="premisDiv">
 <div class="card-body well">
 {% for premis_event in original_file['premis_events'] %}
-<h4 class="card-title">{{ _('Event UUID:') }} {{ premis_event['event_uuid'] }}</h4>
-<p><strong>{{ _('Event type:') }}</strong> {{ premis_event['event_type'] }}</p>
+<h4 class="card-title">{{ _('Event:') }} <span class="rdfLabel" lookup="sparprovenance:{{ premis_event['event_type'] }}">{{ premis_event['event_type'] }}</span></h4>
 <p><strong>{{ _('Event datetime:') }}</strong> {{ premis_event['event_datetime'] }}</p>
 {% if premis_event['event_detail'] %}
 <p><strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}</p>

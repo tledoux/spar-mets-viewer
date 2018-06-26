@@ -34,3 +34,10 @@ For the file to be correctly read, it needs to comply with the [Generic METS pro
 * Run (on localhost, port 5000):  
 `./run.py`  
 * Go to `localhost:5000` in browser. 
+
+## Configuration
+
+If you need to specify local settings, instead of modifing `config.py`,
+you can define the `METSVIEWER_SETTINGS` environment variable to locate a file.
+This file, say `production_config.py`, will define the parameters you want to locally set and that will 
+overide the ones defined by default in `config.py`.

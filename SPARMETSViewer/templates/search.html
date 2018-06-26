@@ -1,8 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-  <script src="static/js/d3.v3.min.js"></script>
-  <script src="static/js/d3sparql.js"></script>
-  
   <div class="well">
   <p>{{ _('Fill in the fields to make a query on the platform %(platform)s.', platform=access_platform) }}</p>
   </div>
@@ -61,10 +58,20 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
     <button class="btn btn-primary" type="button" onclick="exec()">{{ _('Submit') }}</button>
   </form>
   <hr />
+  <div id="progress" hidden>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <p class="text-center"><span class="fa fa-refresh fa-spin fa-2x"></span> {{ _('Search in progress.') }}</p>
+            </div>
+        </div>
+    </div>
+  </div>
   <!-- TODO replace by a table -->
   <div id="result"></div>
   <script>
     function exec() {
+      d3.select("#progress").attr("hidden", null)
       var endpoint = "/sparql"
       // Retrieve the fields
       var channel = d3.select("#channel").property("value")
@@ -77,20 +84,20 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         "?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p." +
         "GRAPH ?g {" +
         "?p a sparstructure:group. " +
-        "?p sparcontext:isMemberOf <" + channel + ">." +
-        "?p sparreference:productionIdentifier ?prodId." +
-        "OPTIONAL {?p dc:title ?titre}" +
-        "OPTIONAL {?p dc:type ?type}"
+        "?p sparcontext:isMemberOf <" + channel + ">. " +
+        "?p sparreference:productionIdentifier ?prodId. " +
+        "OPTIONAL {?p dc:title ?titre} " +
+        "OPTIONAL {?p dc:type ?type} "
       if (originId) {
-        sparql += "?p sparreference:productionIdentifier \"" + originId + "\"."
+        sparql += "?p sparreference:productionIdentifier \"" + originId + "\". "
       }
       if (type) {
         sparql += "?p dc:type \"" + type + "\"."
       }
       if (title) {
-        sparql += " FILTER(CONTAINS(?titre, \"" + title + "\"))"
+        sparql += " FILTER(CONTAINS(?titre, \"" + title + "\")) "
       }
-      sparql += "} }"
+      sparql += "} } ORDER BY ?prodId LIMIT 20"
       console.log("SPARQL [" + endpoint + "]: " + sparql)
       // Launch the query and invoke render() when results arrived
       d3sparql.query(endpoint, sparql, render)
@@ -101,12 +108,13 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         "selector": "#result"
       }
       d3sparql.htmltable(json, config)
-      
+      d3.select("#progress").attr("hidden", true)
+
       // Now add the detail column
       var myTable = d3.select("#result").select("div").select("table")
       myTable.select("thead").select("tr").append("th").style({"background": "#eeeeee","text-transform": "capitalize"}).text("{{ _('Details') }}")
       var myRows = myTable.select("tbody").selectAll("tr")
-      var myCells = myRows.append("td").append("a").attr("href",function(val) { console.log(val); return "/upload?ark=" + val.ark.value }).append("button").attr("class", "btn btn-primary").insert("span").attr("class", "fa fa-arrow-circle-down").text(" {{ _('Upload') }}")
+      var myCells = myRows.append("td").append("a").attr("href",function(val) { return "/upload?ark=" + val.ark.value }).append("button").attr("class", "btn btn-primary").insert("span").attr("class", "fa fa-arrow-circle-down").text(" {{ _('Upload') }}")
     }
     // 
   </script>

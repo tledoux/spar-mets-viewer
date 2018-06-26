@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>{{ _('AIP ID:') }} {{ aip_uuid|safe }}</h3>
+<h3>{{ aip_uuid|safe }}</h3>
 <p><strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
 {% if dcmetadata %}
 <div class="card bg-light border-secondary mb-3">
@@ -24,8 +24,7 @@
 <div class="card-body well">
 {% for premis_event in dcmetadata %}
 {% if premis_event['event'] %}
-<h4 class="card-title">{{ _('Event UUID:') }} {{ premis_event['event_uuid'] }}</h4>
-<p><strong>{{ _('Event type:') }}</strong> {{ premis_event['event_type'] }}</p>
+<h4 class="card-title">{{ _('Event:') }} <span class="rdfLabel" lookup="sparprovenance:{{ premis_event['event_type'] }}">{{ premis_event['event_type'] }}</span></h4>
 <p><strong>{{ _('Event datetime:') }}</strong> {{ premis_event['event_datetime'] }}</p>
 {% if premis_event['event_detail'] %}
 <p><strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}</p>
@@ -34,7 +33,7 @@
 <p><strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome'] }}</p>
 {% endif %}
 {% if premis_event['event_detail_note'] %}
-<p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note'] }}</p>
+<p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note']|safe }}</p>
 {% endif %}
 {% if premis_event['premis_agents'] %}
   <p><strong>{{ _('PREMIS Agent') }}</strong></p>

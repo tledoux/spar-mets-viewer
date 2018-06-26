@@ -27,6 +27,8 @@ def download(url, file_name):
     with open(file_name, "wb") as file:
         # get request
         response = get(url)
+        if response.status_code != 200:
+            raise ValueError("Not found")
         # write to file
         file.write(response.content)
 
@@ -171,7 +173,7 @@ def retrieve_ark():
                 access_platform=app.config['ACCESS_PLATFORM'])
         access_platform = app.config['ACCESS_PLATFORM']
         access_server = app.config['ACCESS_URL']
-        ark = app.config['ARK_PREFIX'] + ark
+        ark = app.config['ARK_PREFIX'] + ark.strip()
         if access_platform == 'TEST':
             url = access_server
         else:
@@ -181,7 +183,17 @@ def retrieve_ark():
         if not os.path.exists(app.config['UPLOAD_FOLDER']):
             os.makedirs(app.config['UPLOAD_FOLDER'])
         mets_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        download(url, mets_path)
+        try:
+            download(url, mets_path)
+        except ValueError:
+            os.remove(mets_path)
+            error = gettext('METS not found')
+            return render_template(
+                'upload.html',
+                error=error,
+                ark_prefix=app.config['ARK_PREFIX'],
+                access_platform=app.config['ACCESS_PLATFORM'])
+
         aip_name = os.path.basename(filename)
         mets = METSFile(mets_path, aip_name, access_platform)
         success = mets.parse_mets()
