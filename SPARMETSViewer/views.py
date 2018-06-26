@@ -3,7 +3,8 @@
 import os
 import sys
 
-from flask import request, render_template
+from functools import lru_cache
+from flask import request, render_template, jsonify
 from flask_babel import gettext
 from requests import get  # to make GET request
 from werkzeug.utils import secure_filename
@@ -70,6 +71,37 @@ def render_page():
         ark=ark,
         ark_prefix=app.config['ARK_PREFIX'],
         access_platform=app.config['ACCESS_PLATFORM'])
+
+
+@app.route("/labels/<label>", methods=['GET'])
+@lru_cache(maxsize=128)
+def label_query(label):
+    """Make a SPARQL query to retrieve a label"""
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+    if platform == "TEST":
+        if label == "sparprovenance:digitization":
+            # print("THL label test for ", label, file=sys.stderr)
+            return jsonify(
+                {"head": {"link": [], "vars": ["label"]},
+                 "results": {
+                    "distinct": "false", "ordered": "true",
+                    "bindings": [{"label": {"type": "literal", "value": "Numérisation"}}]}})
+        else:
+            return jsonify(
+                {"head": {"link": [], "vars": ["label"]},
+                 "results": {"distinct": "false", "ordered": "true", "bindings": []}})
+    # Make a SPARQL query to retrieve the label
+    endpoint = app.config['ACCESS_ENDPOINT']
+    query = """
+        SELECT ?label WHERE { %s rdfs:label ?label.
+        FILTER (lang(?label) = '%s' or lang(?label) = '' } LIMIT 1""" % (label, gettext("en"))
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    return response.content
 
 
 @app.route("/sparql", methods=['GET', 'POST'])

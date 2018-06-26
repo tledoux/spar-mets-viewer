@@ -42,9 +42,9 @@ def add_naan(ark):
         return ark
     pure_ark = m.group(1)
     for prefix, url in PREFIX_URL.items():
-       if ark.startswith(prefix):
-           full_url = url % pure_ark
-           return "<a href=\"%s\" target=\"_blank\">%s</a>" % (full_url, ark)
+        if ark.startswith(prefix):
+            full_url = url % pure_ark
+            return "<a href=\"%s\" target=\"_blank\">%s</a>" % (full_url, ark)
 
     if ark.startswith('ark:/12148/br2d2'):
         url = "http://consultation.spar.bnf.fr/sparql?"

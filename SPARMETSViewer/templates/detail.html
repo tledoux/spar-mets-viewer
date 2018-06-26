@@ -147,4 +147,27 @@
 </div>
 </div>
 </div>
+<script>
+  var getLabel = function(prep, element) {
+    $.getJSON('/labels/'+prep, function(data) { 
+      var bindings = data.results.bindings
+      if (bindings === undefined || bindings.length == 0) {
+        return
+      }
+      var label = bindings[0].label.value;
+      if (label !== undefined) {
+        var oldText = $(element).text()
+        $(element).text(label + " (" + oldText + ")")
+      }
+    })
+  }
+
+  // Substitute all the rdfLabel with the equivalent in RDF database
+  $(".rdfLabel").each(function(index, element) {
+    var prep = $(element).attr("lookup");
+    if (prep !== undefined) {
+      getLabel(prep, element);
+    }
+  })
+</script>
 {% endblock %}
