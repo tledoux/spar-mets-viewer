@@ -13,7 +13,7 @@ from SPARMETSViewer import app, babel, db
 from config import LANGUAGES
 
 from .models import METS
-from .parsemets import METSFile
+from .parsemets import METSFile, abstract_ark
 
 
 @babel.localeselector
@@ -73,7 +73,7 @@ def render_page():
         access_platform=app.config['ACCESS_PLATFORM'])
 
 
-@app.route("/labels/<label>", methods=['GET'])
+@app.route("/labels/<path:label>", methods=['GET'])
 @lru_cache(maxsize=128)
 def label_query(label):
     """Make a SPARQL query to retrieve a label"""
@@ -82,21 +82,64 @@ def label_query(label):
         return
     if platform == "TEST":
         if label == "sparprovenance:digitization":
-            # print("THL label test for ", label, file=sys.stderr)
             return jsonify(
                 {"head": {"link": [], "vars": ["label"]},
                  "results": {
                     "distinct": "false", "ordered": "true",
-                    "bindings": [{"label": {"type": "literal", "value": "Numérisation"}}]}})
+                    "bindings": [{"label": {"type": "literal",
+                                            "xml:lang": "fr", "value": "Num\u00E9risation"}}]}})
+        elif label == "sparprovenance:packageCreation":
+            return jsonify(
+                {"head": {"link": [], "vars": ["label"]},
+                 "results": {
+                    "distinct": "false", "ordered": "true",
+                    "bindings": [{"label": {"type": "literal",
+                                            "xml:lang": "fr", "value": "Cr\u00E9ation de paquet"}}]}})
+        elif label == "sparprovenance:hasPerformer":
+            return jsonify(
+                {"head": {"link": [], "vars": ["label"]},
+                 "results": {
+                    "distinct": "false", "ordered": "true",
+                    "bindings": [{"label": {"type": "literal",
+                                            "xml:lang": "fr", "value": "ex\u00E9cutant"}}]}})
+        elif label == "ark:/12148/br2d2wf":
+            return jsonify(
+                {"head": {"link": [], "vars": ["label"]},
+                 "results": {
+                    "distinct": "false", "ordered": "true",
+                    "bindings": [{"label": {"type": "literal", "value": "Format TIFF NB G4"}}]}})
+        elif abstract_ark(label) == "ark:/12148/br2d27h":
+            return jsonify(
+                {"head": {"link": [], "vars": ["label"]},
+                 "results": {
+                    "distinct": "false", "ordered": "true",
+                    "bindings": [{"label": {"type": "literal", "value": "Processus ING_1"}}]}})
         else:
             return jsonify(
                 {"head": {"link": [], "vars": ["label"]},
                  "results": {"distinct": "false", "ordered": "true", "bindings": []}})
     # Make a SPARQL query to retrieve the label
     endpoint = app.config['ACCESS_ENDPOINT']
+    label = label.strip()
+    if label.startswith("ark:"):
+        value = "VALUES ?ark { <%s> } " % abstract_ark(label)
+    elif label.startswith("info:"):
+        value = "VALUES ?uri { <%s> } " % label
+    else:
+        return jsonify(
+            {"head": {"link": [], "vars": ["label"]},
+             "results": {"distinct": "false", "ordered": "true", "bindings": []}})
+
     query = """
-        SELECT ?label WHERE { %s rdfs:label ?label.
-        FILTER (lang(?label) = '%s' or lang(?label) = '' } LIMIT 1""" % (label, gettext("en"))
+        SELECT ?label WHERE {
+          ?ark owl:sameAs ?uri.
+          { ?ark rdfs:label ?label }
+          UNION { ?ark foaf:name ?label }
+          UNION { ?ark dc:title ?label }
+          %s
+          FILTER (lang(?label) = '%s' or lang(?label) = '')
+        } LIMIT 1""" % (value, gettext("en"))
+    app.logger.debug("SPARQL query %s", query)
     response = get(
         endpoint,
         headers={'Accept': 'application/sparql-results+json'},
@@ -115,13 +158,12 @@ def sparql_query():
         raise ValueError("No query")
 
     endpoint = app.config['ACCESS_ENDPOINT']
-    # print("THL sparql", endpoint + " " + query, file=sys.stderr)
 
     response = get(
         endpoint,
         headers={'Accept': 'application/sparql-results+json'},
         params={'query': query, 'format': 'application/sparql-results+json'})
-    # print("THL sparql response", response.status_code, file=sys.stderr)
+    app.logger.debug("SPARQL response %s", response.status_code)
     return response.content
 
 

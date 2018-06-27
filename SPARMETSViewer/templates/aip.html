@@ -22,28 +22,39 @@
 </div>
 <div class="collapse show" id="premisDiv">
 <div class="card-body well">
+
+<div class="main-timeline">
 {% for premis_event in dcmetadata %}
 {% if premis_event['event'] %}
-<h4 class="card-title">{{ _('Event:') }} <span class="rdfLabel" lookup="sparprovenance:{{ premis_event['event_type'] }}">{{ premis_event['event_type'] }}</span></h4>
-<p><strong>{{ _('Event datetime:') }}</strong> {{ premis_event['event_datetime'] }}</p>
+
+<div class="timeline">
+    <div class="timeline-content">
+        <span class="year">{{ premis_event['event_date'] }}</span>
+        <h3 class="title">{{ _('Event:') }} <span class="rdfLabel" lookup="sparprovenance:{{ premis_event['event_type'] }}">{{ premis_event['event_type'] }}</span></h3>
+        <p class="description">
 {% if premis_event['event_detail'] %}
-<p><strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}</p>
+<strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}<br/>
 {% endif %}
 {% if premis_event['event_outcome'] %}
-<p><strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome'] }}</p>
+<strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome']|safe }}<br/>
 {% endif %}
 {% if premis_event['event_detail_note'] %}
-<p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note']|safe }}</p>
+<strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note']|safe }}<br/>
 {% endif %}
 {% if premis_event['premis_agents'] %}
-  <p><strong>{{ _('PREMIS Agent') }}</strong></p>
   {% for premis_agent in premis_event['premis_agents'] %}
-    <p>&nbsp;&nbsp;&nbsp;<strong>{{ premis_agent['agent_role'] }} :</strong> {{ premis_agent['agent_value']|safe }} <i>({{ premis_agent['agent_type'] }})</i></p>
+    <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_agent['agent_role']|title}}">{{ premis_agent['agent_role'] }}</span> :</strong>
+    <span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>
+    <i>({{ premis_agent['agent_type'] }})</i>
+    <br/>
   {% endfor %}
 {% endif %}
-<br>
+        </p>
+    </div>
+</div>
 {% endif %}
 {% endfor %}
+</div>
 </div>
 </div>
 </div>
@@ -84,7 +95,6 @@ this.options.icons.toggle
 </thead>
     {% for original_file in original_files %}
         <tr>
-          
           <td>{{ original_file['filepath'] }}</td>
           <td>{{ original_file['format'] }}</td>
           <td>{{ original_file['version'] }}</td>
@@ -101,8 +111,11 @@ this.options.icons.toggle
 {% endif %}
 
 <script>
-    function sizeFormatter(value) {
-        return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');
-    }
+  function sizeFormatter(value) {
+    return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');
+  }
+  // Enhance the visualisation
+  substituteRdfLabel();
+  provideRdfTooltip();
 </script>
 {% endblock %}

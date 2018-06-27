@@ -27,6 +27,25 @@ def convert_size(size):
     return '{} {}'.format(string_size, size_name[i])
 
 
+def abstract_ark(ark):
+    """Extract the ark with no qualifiers"""
+    ARK_REGEX = re.compile('(ark:/12148/[0-9bcdfghjkmnpqrstvwxz]+).*')
+    m = ARK_REGEX.match(ark)
+    if m is None:
+        return m
+    return m.group(1)
+
+
+def extract_date(xml_datetime):
+    """Extract the date and time from an XML date time"""
+    DT_REGEX = re.compile('([0-9]{4}\-[0-9]{2}\-[0-9]{2})T([0-9]{2}:[0-9]{2}:[0-9]{2}).*')
+    m = DT_REGEX.match(xml_datetime)
+    if m is None:
+        return xml_datetime
+    return m.group(1) + " " + m.group(2)
+
+
+
 def add_naan(ark):
     """Add links to known ARKs identifier"""
 
@@ -36,11 +55,9 @@ def add_naan(ark):
         'ark:/12148/bpt6k': 'http://gallicaintramuros.bnf.fr/%s',
         'ark:/12148/bttv': 'http://gallicaintramuros.bnf.fr/%s'
     }
-    ARK_REGEX = re.compile('(ark:/12148/[0-9bcdfghijkmnpqrstvwxz]+).*')
-    m = ARK_REGEX.match(ark)
-    if m is None:
+    pure_ark = abstract_ark(ark)
+    if pure_ark is None:
         return ark
-    pure_ark = m.group(1)
     for prefix, url in PREFIX_URL.items():
         if ark.startswith(prefix):
             full_url = url % pure_ark
@@ -211,7 +228,7 @@ class METSFile(object):
 
         return dcmetadata
 
-    def parse_element_with_given_xpaths(self, element, data, xpaths):
+    def parse_element_with_given_xpaths(self, element, data, xpaths, with_naan=True):
         """parse an element to extract information according to the given dictionary"""
         for key, value in xpaths.items():
             target = element.xpath(value, namespaces=self.NAMESPACES)
@@ -223,7 +240,10 @@ class METSFile(object):
                 continue
             if target and isinstance(target, list):
                 if isinstance(target[0], etree._Element):
-                    data['{}'.format(key)] = add_naan(target[0].text)
+                    if with_naan:
+                        data['{}'.format(key)] = add_naan(target[0].text)
+                    else:
+                        data['{}'.format(key)] = target[0].text
                 else:
                     data['{}'.format(key)] = target[0]
 
@@ -259,7 +279,7 @@ class METSFile(object):
         # create dict to store data
         premis_event = dict()
         # iterate over elements and write key, value for each to premis_event dictionary
-        self.parse_element_with_given_xpaths(element, premis_event, premis_key_values)
+        self.parse_element_with_given_xpaths(element, premis_event, premis_key_values, with_naan=False)
 
         # agents
         agents = element.xpath('./event/linkingAgentIdentifier', namespaces=self.NAMESPACES)
@@ -267,9 +287,10 @@ class METSFile(object):
             premis_event['premis_agents'] = []
             for agent in agents:
                 my_agent = dict()
-                self.parse_element_with_given_xpaths(agent, my_agent, agent_key_values)
+                self.parse_element_with_given_xpaths(agent, my_agent, agent_key_values, with_naan=True)
                 premis_event['premis_agents'].append(my_agent)
-
+        premis_event['event_date'] = extract_date(premis_event['event_datetime'])
+        
         return premis_event
 
     def parse_file_mix(self, element, file_data):
@@ -414,6 +435,9 @@ class METSFile(object):
             if xmp is not None:
                 self.parse_file_xmp(xmp, file_data)
 
+        # Sort the premis events by datetime
+        file_data['premis_events'].sort(key=lambda event: event["event_datetime"])
+
         # create human-readable size
         file_data['bytes'] = int(file_data['bytes'])
         file_data['size'] = '0 bytes'  # default to none
@@ -458,6 +482,7 @@ class METSFile(object):
             return
 
         amdsec_ids = div.get('ADMID', '')
+        events = []
         for amdsec_id in amdsec_ids.split(" "):
             # parse amdSec
             amdsec_xpath = ".//amdSec/*[@ID='{}']".format(amdsec_id)
@@ -470,8 +495,12 @@ class METSFile(object):
             if premis_event is not None:
                 myEvent = self.parse_premis_event(premis_event)
                 myEvent['event'] = 'premis'
-                dcmetadata.append(myEvent)
+                events.append(myEvent)
                 continue
+        events.sort(key=lambda event: event["event_datetime"])
+        for event in events:
+            dcmetadata.append(event)
+
 
     def parse_mets(self):
         """

@@ -14,7 +14,7 @@
 <p><strong>{{ _('Size (bytes):') }}</strong> {{ original_file['bytes'] }}</p>
 <p><strong>{{ _('File format:') }}</strong> {{ original_file['format'] }}</p>
 <p><strong>{{ _('Version:') }}</strong> {{ original_file['version'] }}</p>
-<p><strong>{{ _('Ark format:') }}</strong> {{ original_file['arkFormat']|safe }}</p>
+<p><strong>{{ _('Ark format:') }}</strong> <span class="rdfTooltip" data-toggle="tooltip">{{ original_file['arkFormat']|safe }}</span></p>
 <!-- <p><strong>{{ _('amdSec ID:') }}</strong> {{ original_file['amdsec_id'] }}</p> -->
 <p><strong>{{ _('%(hashtype)s hash:', hashtype=original_file['hashtype']) }}</strong> {{ original_file['hashvalue'] }}</p>
 {% if original_file['title'] %}
@@ -131,7 +131,7 @@
 <p><strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}</p>
 {% endif %}
 {% if premis_event['event_outcome'] %}
-<p><strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome'] }}</p>
+<p><strong>{{ _('Event outcome:') }}</strong> {{ premis_event['event_outcome']|safe }}</p>
 {% endif %}
 {% if premis_event['event_detail_note'] %}
 <p><strong>{{ _('Event detail note:') }}</strong> {{ premis_event['event_detail_note'] }}</p>
@@ -139,7 +139,11 @@
 {% if premis_event['premis_agents'] %}
   <p><strong>{{ _('PREMIS Agent') }}</strong></p>
   {% for premis_agent in premis_event['premis_agents'] %}
-    <p>&nbsp;&nbsp;&nbsp;<strong>{{ premis_agent['agent_role'] }} :</strong> {{ premis_agent['agent_value']|safe }} <i>({{ premis_agent['agent_type'] }})</i></p>
+    <p>&nbsp;&nbsp;&nbsp;
+    <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_agent['agent_role']|title}}">{{ premis_agent['agent_role'] }}</span> :</strong>
+    <span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>
+    <i>({{ premis_agent['agent_type'] }})</i>
+    </p>
   {% endfor %}
 {% endif %}
 <br>
@@ -148,26 +152,8 @@
 </div>
 </div>
 <script>
-  var getLabel = function(prep, element) {
-    $.getJSON('/labels/'+prep, function(data) { 
-      var bindings = data.results.bindings
-      if (bindings === undefined || bindings.length == 0) {
-        return
-      }
-      var label = bindings[0].label.value;
-      if (label !== undefined) {
-        var oldText = $(element).text()
-        $(element).text(label + " (" + oldText + ")")
-      }
-    })
-  }
-
-  // Substitute all the rdfLabel with the equivalent in RDF database
-  $(".rdfLabel").each(function(index, element) {
-    var prep = $(element).attr("lookup");
-    if (prep !== undefined) {
-      getLabel(prep, element);
-    }
-  })
+  // Enhance the visualisation
+  substituteRdfLabel();
+  provideRdfTooltip();
 </script>
 {% endblock %}
