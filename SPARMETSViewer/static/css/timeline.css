@@ -100,24 +100,33 @@
 .main-timeline .timeline:nth-child(even){ margin-bottom: 60px; }
 .main-timeline .timeline:first-child,
 .main-timeline .timeline:last-child:nth-child(even){ margin: 0; }
-.main-timeline .timeline:nth-child(2n):before{
+
+.main-timeline .timeline:nth-child(4n+1):before{
+    background: #c47c48;
+    box-shadow: 0 0 1px 5px #c47c48;
+}
+.main-timeline .timeline:nth-child(4n+1) .year{ background: #c47c48; }
+.main-timeline .timeline:nth-child(4n+1) .year:before{ border-top-color: #c47c48; }
+.main-timeline .timeline:nth-child(4n+2):before{
     background: #bf3fc8;
     box-shadow: 0 0 1px 5px #bf3fc8;
 }
-.main-timeline .timeline:nth-child(2n) .year{ background: #bf3fc8; }
-.main-timeline .timeline:nth-child(2n) .year:before{ border-top-color: #bf3fc8; }
-.main-timeline .timeline:nth-child(3n):before{
+.main-timeline .timeline:nth-child(4n+2) .year{ background: #bf3fc8; }
+.main-timeline .timeline:nth-child(4n+2) .year:before{ border-top-color: #bf3fc8; }
+.main-timeline .timeline:nth-child(4n+3):before{
     background: #ce3c41;
     box-shadow: 0 0 1px 5px #ce3c41;
 }
-.main-timeline .timeline:nth-child(3n) .year{ background: #ce3c41; }
-.main-timeline .timeline:nth-child(3n) .year:before{ border-top-color: #ce3c41; }
-.main-timeline .timeline:nth-child(4n):before{
+.main-timeline .timeline:nth-child(4n+3) .year{ background: #ce3c41; }
+.main-timeline .timeline:nth-child(4n+3) .year:before{ border-top-color: #ce3c41; }
+.main-timeline .timeline:nth-child(4n+4):before{
     background: #8cc43d;
     box-shadow: 0 0 1px 5px #8cc43d;
 }
-.main-timeline .timeline:nth-child(4n) .year{ background: #8cc43d; }
-.main-timeline .timeline:nth-child(4n) .year:before{ border-top-color: #8cc43d; }
+.main-timeline .timeline:nth-child(4n+4) .year{ background: #8cc43d; }
+.main-timeline .timeline:nth-child(4n+4) .year:before{ border-top-color: #8cc43d; }
+
+
 @media only screen and (max-width: 990px){
     .main-timeline:before{ top: 8%; }
     .main-timeline .timeline{ padding: 10px 10px 10px 100px; }

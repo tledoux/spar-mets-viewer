@@ -55,7 +55,7 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
       <label for="type" class="control-label col-sm-2">{{ _('Type') }}</label>
       <input type="text" name="type" id="type" placeholder="monograph"/>
     </div>
-    <button class="btn btn-primary" type="button" onclick="exec()">{{ _('Submit') }}</button>
+    <button class="btn btn-primary" id="btnSubmit" type="button" onclick="exec()">{{ _('Submit') }}</button>
   </form>
   <hr />
   <div id="progress" hidden>
@@ -72,6 +72,7 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
   <script>
     function exec() {
       d3.select("#progress").attr("hidden", null)
+      d3.select("#btnSubmit").attr("disabled", "disabled")
       var endpoint = "/sparql"
       // Retrieve the fields
       var channel = d3.select("#channel").property("value")
@@ -109,6 +110,7 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
       }
       d3sparql.htmltable(json, config)
       d3.select("#progress").attr("hidden", true)
+      d3.select("#btnSubmit").attr("disabled", null)
 
       // Now add the detail column
       var myTable = d3.select("#result").select("div").select("table")
