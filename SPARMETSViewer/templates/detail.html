@@ -146,6 +146,16 @@
     </p>
   {% endfor %}
 {% endif %}
+{% if premis_event['premis_objects'] %}
+  <p><strong>{{ _('PREMIS Object') }}</strong></p>
+  {% for premis_object in premis_event['premis_objects'] %}
+    <p>&nbsp;&nbsp;&nbsp;
+    <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_object['object_role']|title}}">{{ premis_object['object_role'] }}</span> :</strong>
+    <span class="rdfTooltip" data-toggle="tooltip">{{ premis_object['object_value']|safe }}</span>
+    <i>({{ premis_object['object_type'] }})</i>
+    </p>
+  {% endfor %}
+{% endif %}
 <br>
 {% endfor %}
 </div>

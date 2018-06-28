@@ -276,6 +276,11 @@ class METSFile(object):
             'agent_value': './linkingAgentIdentifierValue',
             'agent_role': './linkingAgentRole'
         }
+        object_key_values = {
+            'object_type': './linkingObjectIdentifierType',
+            'object_value': './linkingObjectIdentifierValue',
+            'object_role': './linkingObjectRole'
+        }
         # create dict to store data
         premis_event = dict()
         # iterate over elements and write key, value for each to premis_event dictionary
@@ -289,6 +294,18 @@ class METSFile(object):
                 my_agent = dict()
                 self.parse_element_with_given_xpaths(agent, my_agent, agent_key_values, with_naan=True)
                 premis_event['premis_agents'].append(my_agent)
+        # objects
+        objects = element.xpath('./event/linkingObjectIdentifier', namespaces=self.NAMESPACES)
+        if objects:
+            premis_event['premis_objects'] = []
+            for object in objects:
+                my_object = dict()
+                self.parse_element_with_given_xpaths(object, my_object, object_key_values, with_naan=True)
+                if my_object.get('object_role') is None:
+                    my_object['object_role'] = 'object'
+                premis_event['premis_objects'].append(my_object)
+
+        # Calculate a human readable date
         premis_event['event_date'] = extract_date(premis_event['event_datetime'])
         
         return premis_event

@@ -10,7 +10,11 @@
 <div class="card-body">
   {% for element in dcmetadata %}
   {% if element['element'] %}
+  {% if element['element'] == 'channel identifier' %}
+    <p><strong>{{ gettext(element['element']|title + ':') }}</strong> <span class="rdfTooltip" data-toggle="tooltip">{{ element['value']|safe }}</span></p>
+  {% else %}
     <p><strong>{{ gettext(element['element']|title + ':') }}</strong> {{ element['value']|safe }}</p>
+  {% endif %}
   {% endif %}
   {% endfor %}
 </div>
@@ -30,7 +34,7 @@
 <div class="timeline">
     <div class="timeline-content">
         <span class="year">{{ premis_event['event_date'] }}</span>
-        <h3 class="title">{{ _('Event:') }} <span class="rdfLabel" lookup="sparprovenance:{{ premis_event['event_type'] }}">{{ premis_event['event_type'] }}</span></h3>
+        <h3 class="title"><span class="rdfLabel" lookup="sparprovenance:{{ premis_event['event_type'] }}">{{ premis_event['event_type'] }}</span></h3>
         <p class="description">
 {% if premis_event['event_detail'] %}
 <strong>{{ _('Event detail:') }}</strong> {{ premis_event['event_detail'] }}<br/>
@@ -46,6 +50,14 @@
     <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_agent['agent_role']|title}}">{{ premis_agent['agent_role'] }}</span> :</strong>
     <span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>
     <i>({{ premis_agent['agent_type'] }})</i>
+    <br/>
+  {% endfor %}
+{% endif %}
+{% if premis_event['premis_objects'] %}
+  {% for premis_object in premis_event['premis_objects'] %}
+    <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_object['object_role']|title}}">{{ premis_object['object_role'] }}</span> :</strong>
+    <span class="rdfTooltip" data-toggle="tooltip">{{ premis_object['object_value']|safe }}</span>
+    <i>({{ premis_object['object_type'] }})</i>
     <br/>
   {% endfor %}
 {% endif %}

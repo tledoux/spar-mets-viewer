@@ -122,9 +122,14 @@ def label_query(label):
     endpoint = app.config['ACCESS_ENDPOINT']
     label = label.strip()
     if label.startswith("ark:"):
+        same = ""
         value = "VALUES ?ark { <%s> } " % abstract_ark(label)
     elif label.startswith("info:"):
+        same = "?ark owl:sameAs ?uri. "
         value = "VALUES ?uri { <%s> } " % label
+    if label.startswith("spar"):
+        same = ""
+        value = "VALUES ?uri { %s } " % label
     else:
         return jsonify(
             {"head": {"link": [], "vars": ["label"]},
@@ -132,13 +137,13 @@ def label_query(label):
 
     query = """
         SELECT ?label WHERE {
-          ?ark owl:sameAs ?uri.
+          %s
           { ?ark rdfs:label ?label }
           UNION { ?ark foaf:name ?label }
           UNION { ?ark dc:title ?label }
           %s
           FILTER (lang(?label) = '%s' or lang(?label) = '')
-        } LIMIT 1""" % (value, gettext("en"))
+        } LIMIT 1""" % (same, value, gettext("en"))
     app.logger.debug("SPARQL query %s", query)
     response = get(
         endpoint,
