@@ -298,6 +298,7 @@ def show_aip(mets_file):
     mets_instance = METS.query.filter_by(metsfile='%s' % (mets_file)).first()
     original_files = mets_instance.metslist
     dcmetadata = mets_instance.dcmetadata
+    objects = mets_instance.objects
     filecount = mets_instance.originalfilecount
     aip_uuid = mets_file
     for element in dcmetadata:
@@ -308,8 +309,8 @@ def show_aip(mets_file):
 
     return render_template(
         'aip.html', original_files=original_files,
-        mets_file=mets_file, dcmetadata=dcmetadata, filecount=filecount,
-        aip_uuid=aip_uuid
+        mets_file=mets_file, dcmetadata=dcmetadata, objects=objects,
+        filecount=filecount, objectcount=len(objects), aip_uuid=aip_uuid
     )
 
 

@@ -4,7 +4,7 @@
 <p><strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
 
 <div class="card bg-light border-secondary mb-3">
-<div class="card-header"><h3><a data-toggle="collapse" href="#generalDetailsDiv" aria-expanded="true" aria-controls="generalDetailsDiv">{{ _('General details') }}</a></h3>
+<div class="card-header"><h5><a data-toggle="collapse" href="#generalDetailsDiv" aria-expanded="true" aria-controls="generalDetailsDiv">{{ _('General details') }}</a></h5>
 </div>
 <div class="collapse show" id="generalDetailsDiv">
 <div class="card-body">
@@ -15,7 +15,6 @@
 <p><strong>{{ _('File format:') }}</strong> {{ original_file['format'] }}</p>
 <p><strong>{{ _('Version:') }}</strong> {{ original_file['version'] }}</p>
 <p><strong>{{ _('Ark format:') }}</strong> <span class="rdfTooltip" data-toggle="tooltip">{{ original_file['arkFormat']|safe }}</span></p>
-<!-- <p><strong>{{ _('amdSec ID:') }}</strong> {{ original_file['amdsec_id'] }}</p> -->
 <p><strong>{{ _('%(hashtype)s hash:', hashtype=original_file['hashtype']) }}</strong> {{ original_file['hashvalue'] }}</p>
 {% if original_file['title'] %}
 <p><strong>{{ _('Title:') }}</strong> {{ original_file['title'] }}</p>
@@ -31,7 +30,7 @@
 </div>
 
 <div class="card bg-light border-secondary mb-3">
-<div class="card-header"><h3><a data-toggle="collapse" href="#detailedIdDiv" aria-expanded="true" aria-controls="detailedIdDiv">{{ _('Detailed identification') }}</a></h3>
+<div class="card-header"><h5><a data-toggle="collapse" href="#detailedIdDiv" aria-expanded="true" aria-controls="detailedIdDiv">{{ _('Detailed identification') }}</a></h5>
 </div>
 <div class="collapse show" id="detailedIdDiv">
 <div class="card-body well">
@@ -120,7 +119,7 @@
 </div>
 
 <div class="card bg-light border-secondary mb-3">
-<div class="card-header"><h3><a data-toggle="collapse" href="#premisDiv" aria-expanded="true" aria-controls="premisDiv">{{ _('PREMIS Events') }}</a></h3>
+<div class="card-header"><h5><a data-toggle="collapse" href="#premisDiv" aria-expanded="true" aria-controls="premisDiv">{{ _('PREMIS Events') }}</a></h5>
 </div>
 <div class="collapse show" id="premisDiv">
 <div class="card-body well">

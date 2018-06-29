@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-06-28 19:15+0200\n"
+"POT-Creation-Date: 2018-06-29 01:28+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -102,8 +102,8 @@ msgstr "Identifiant de version :"
 msgid "Channel Identifier:"
 msgstr "Identifiant de chaîne :"
 
-#: SPARMETSViewer/templates/aip.html:91 SPARMETSViewer/templates/index.html:24
-#: SPARMETSViewer/views.py:146
+#: SPARMETSViewer/templates/aip.html:100 SPARMETSViewer/templates/aip.html:148
+#: SPARMETSViewer/templates/index.html:24 SPARMETSViewer/views.py:146
 msgid "en"
 msgstr "fr"
 
@@ -165,51 +165,73 @@ msgstr "Résultat :"
 msgid "Event detail note:"
 msgstr "Détail sur le résultat :"
 
-#: SPARMETSViewer/templates/aip.html:77
+#: SPARMETSViewer/templates/aip.html:78
 #, python-format
 msgid "Files (count: %(fc)s)"
 msgstr "Fichiers (nombre : %(fc)s)"
 
-#: SPARMETSViewer/templates/aip.html:78 SPARMETSViewer/templates/index.html:11
+#: SPARMETSViewer/templates/aip.html:81
+#, python-format
+msgid "Objects (count: %(fc)s)"
+msgstr "Divisions logiques (nombre : %(fc)s)"
+
+#: SPARMETSViewer/templates/aip.html:87 SPARMETSViewer/templates/aip.html:135
+#: SPARMETSViewer/templates/index.html:11
 msgid "Click on any column header to sort the table by that value."
 msgstr "Cliquer sur les entêtes de colonne pour trier la table."
 
-#: SPARMETSViewer/templates/aip.html:98
+#: SPARMETSViewer/templates/aip.html:107
 msgid "Filepath"
 msgstr "Chemin"
 
-#: SPARMETSViewer/templates/aip.html:99
+#: SPARMETSViewer/templates/aip.html:108
 msgid "Format"
 msgstr "Format"
 
-#: SPARMETSViewer/templates/aip.html:100
+#: SPARMETSViewer/templates/aip.html:109
 msgid "Version"
 msgstr "Version"
 
-#: SPARMETSViewer/templates/aip.html:101
+#: SPARMETSViewer/templates/aip.html:110
 msgid "arkFormat"
 msgstr "Ark du format"
 
-#: SPARMETSViewer/templates/aip.html:102
+#: SPARMETSViewer/templates/aip.html:111
 msgid "Size (bytes)"
 msgstr "Taille (octets)"
 
-#: SPARMETSViewer/templates/aip.html:103
+#: SPARMETSViewer/templates/aip.html:112
 msgid "USE"
 msgstr "USE"
 
-#: SPARMETSViewer/templates/aip.html:104
+#: SPARMETSViewer/templates/aip.html:113
 msgid "ID"
 msgstr "ID"
 
-#: SPARMETSViewer/templates/aip.html:105
+#: SPARMETSViewer/templates/aip.html:114
 #: SPARMETSViewer/templates/search.html:117
 msgid "Details"
 msgstr "Détails"
 
-#: SPARMETSViewer/templates/aip.html:117 SPARMETSViewer/templates/index.html:39
+#: SPARMETSViewer/templates/aip.html:126 SPARMETSViewer/templates/index.html:39
 msgid "View"
 msgstr "Voir"
+
+#: SPARMETSViewer/templates/aip.html:152
+msgid "Qualifier"
+msgstr "Qualificatif"
+
+#: SPARMETSViewer/templates/aip.html:153
+msgid "Label"
+msgstr "Label"
+
+#: SPARMETSViewer/templates/aip.html:154
+msgid "Description"
+msgstr "Description"
+
+#: SPARMETSViewer/templates/aip.html:155
+msgid "Files"
+msgstr "Fichiers"
 
 #: SPARMETSViewer/templates/base.html:41
 #: SPARMETSViewer/templates/search.html:119

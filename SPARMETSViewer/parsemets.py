@@ -163,32 +163,7 @@ class METSFile(object):
                     dc_xml = dmd.find('mdWrap/xmlData/spar_dc')
                     # dc_xml = dmd.find('mdWrap/xmlData/dublincore')
                     break
-            for elem in dc_xml:
-                # Skip XML comments
-                if elem.tag is etree.Comment:
-                    continue
-                dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-
-                dc_element = dict()
-                if dc_type is None:
-                    dc_element['element'] = elem.tag
-                else:
-                    if elem.tag in {'identifier', 'description', 'relation'}:
-                        annot = self.strip_prefix(dc_type)
-                        if annot == 'ark':
-                            dc_element['element'] = elem.tag
-                        else:
-                            # print("THL DC attrib", elem.tag, dc_type, file=sys.stderr)
-                            dc_element['element'] = elem.tag + ' (' + annot + ')'
-                    else:
-                        dc_element['element'] = elem.tag
-                dc_element['value'] = elem.text
-
-                if elem.tag == 'relation':
-                    dc_element['value'] = add_naan(elem.text)
-
-                if dc_element['value'] is not None:
-                    dcmetadata.append(dc_element)
+            dcmetadata = self.parse_spardc(dc_xml)
         # Add identifiers description
         techmd = root.find('amdSec/techMD/mdWrap[@MDTYPE="PREMIS:OBJECT"]/xmlData/object')
         premis_identifiers = {
@@ -227,6 +202,38 @@ class METSFile(object):
                 dcmetadata.append(dc_element)
 
         return dcmetadata
+
+    def parse_spardc(self, dc_xml):
+        """parse a spardc to extract information"""
+        metadata = []
+        for elem in dc_xml:
+            # Skip XML comments
+            if elem.tag is etree.Comment:
+                continue
+            dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
+
+            dc_element = dict()
+            #print("THL DC attrib", elem.tag, dc_type, elem.text, file=sys.stderr)
+            if dc_type is None:
+                dc_element['element'] = elem.tag
+            else:
+                if elem.tag in {'identifier', 'description', 'relation'}:
+                    annot = self.strip_prefix(dc_type)
+                    if annot == 'ark':
+                        dc_element['element'] = elem.tag
+                    else:
+                        # print("THL DC attrib", elem.tag, dc_type, file=sys.stderr)
+                        dc_element['element'] = elem.tag + ' (' + annot + ')'
+                else:
+                    dc_element['element'] = elem.tag
+            dc_element['value'] = elem.text
+
+            if elem.tag == 'relation':
+                dc_element['value'] = add_naan(elem.text)
+
+            if dc_element['value'] is not None:
+                metadata.append(dc_element)
+        return metadata
 
     def parse_element_with_given_xpaths(self, element, data, xpaths, with_naan=True):
         """parse an element to extract information according to the given dictionary"""
@@ -389,6 +396,53 @@ class METSFile(object):
         self.parse_element_with_given_xpaths(element, file_data, key_values)
         file_data['dc_present'] = 'yes'
 
+    def extract_object_info(self, target, mets_root):
+        """extract information about the object in target"""
+        # create new dictionary for this item's info
+        object_data = {}
+        # Add information from the file
+        object_data['id'] = target.attrib['ID']  # default value
+        object_data['structmap'] = target.find('../../..').get('TYPE')
+        if 'ORDERLABEL' in target.attrib:
+            label = target.attrib['ORDERLABEL']
+            if label != 'NP':
+                print("THL object ", object_data['id'], " orderLabel=", label, file=sys.stderr)
+                object_data['orderlabel'] = label
+        object_data['order'] = target.attrib['ORDER']
+        # gather the linked files
+        fids = target.findall('./fptr')
+        if fids:
+            object_data['files'] = []
+            for fid in fids: 
+                object_data['files'].append(fid.get('FILEID'))
+        #print("THL object ", object_data['id'], " with files ", object_data['files'], file=sys.stderr)
+        # gather dmdsec id from div object
+        dmdsec_ids = target.attrib.get('DMDID')
+        if dmdsec_ids is None:
+            return object_data
+
+        #object_data['dmdsec_id'] = dmdsec_ids
+        for dmdsec_id in dmdsec_ids.split(" "):
+            # parse dmdSec
+            dmdsec_xpath = ".//dmdSec[@ID='{}']".format(dmdsec_id)
+            # Only one section per ID
+            section = mets_root.find(dmdsec_xpath)
+            if section is None:
+                continue
+            dc_xml = section.find('mdWrap/xmlData/spar_dc')
+            spardc = self.parse_spardc(dc_xml)
+            object_data['dcmetadata'] = spardc
+            for elt in spardc:
+                # print("THL see ", elt['element'], "=", elt['value'], file=sys.stderr)
+                if elt['element'] == 'title':
+                    print("THL object ", object_data['id'], " title=", elt['value'], file=sys.stderr)
+                    object_data['title'] = elt['value']
+                elif elt['element'] == 'description':
+                    print("THL object ", object_data['id'], " description=", elt['value'], file=sys.stderr)
+                    object_data['description'] = elt['value']
+            break
+        return object_data
+
     def extract_file_info(self, target, mets_root):
         """extract information about the file in target"""
         # create new dictionary for this item's info
@@ -400,7 +454,7 @@ class METSFile(object):
         file_data['hashtype'] = target.attrib['CHECKSUMTYPE']
         file_data['hashvalue'] = target.attrib['CHECKSUM']
         file_data['bytes'] = target.get('SIZE', '0')
-        file_data['format'] = target.get('MIMETYPE')  # default value
+        file_data['format'] = target.get('MIMETYPE', '')  # default value
 
         # create new list of dicts for premis events in file_data
         file_data['premis_events'] = list()
@@ -526,7 +580,9 @@ class METSFile(object):
         # create list
         original_files = []
         original_file_count = 0
-
+        objects = []
+        objects_count = 0
+        
         # get METS file name
         mets_filename = os.path.basename(self.path)
 
@@ -547,13 +603,19 @@ class METSFile(object):
         # build xml document root
         mets_root = root
 
-        # gather info for each file"
+        # gather info for each file
         for target in mets_root.findall(".//fileGrp/file"):
             original_file_count += 1
             # create new dictionary for this item's info
             file_data = self.extract_file_info(target, mets_root)
             # append file_data to original files
             original_files.append(file_data)
+
+        # gather info for each structmap
+        for target in mets_root.findall(".//structMap//div[@TYPE='object']"):
+            objects_count += 1
+            object = self.extract_object_info(target, mets_root)
+            objects.append(object)
 
         # gather dublin core metadata from most recent dmdSec
         dc_metadata = self.parse_dc(root)
@@ -569,7 +631,7 @@ class METSFile(object):
             self.nickname += " - " + self.ark
 
         mets_instance = METS(mets_filename, self.nickname,
-                             original_files, dc_metadata, original_file_count)
+                             original_files, dc_metadata, objects, original_file_count)
         isSuccess = True
         try:
             db.session.add(mets_instance)
