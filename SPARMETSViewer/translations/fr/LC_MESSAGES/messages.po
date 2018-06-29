@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-06-29 19:50+0200\n"
+"POT-Creation-Date: 2018-06-30 01:01+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -242,6 +242,10 @@ msgstr "Niveau"
 #: SPARMETSViewer/templates/aip.html:163 SPARMETSViewer/templates/aip.html:184
 msgid "Metadata"
 msgstr "Métadonnées"
+
+#: SPARMETSViewer/templates/aip.html:188
+msgid "Label:"
+msgstr "Label :"
 
 #: SPARMETSViewer/templates/base.html:43
 #: SPARMETSViewer/templates/search.html:119

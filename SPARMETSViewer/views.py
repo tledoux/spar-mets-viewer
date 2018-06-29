@@ -124,13 +124,13 @@ def label_query(label):
     label = label.strip()
     if label.startswith("ark:"):
         same = ""
-        value = "VALUES ?ark { <%s> } " % abstract_ark(label)
+        value = "VALUES ?id { <%s> } " % abstract_ark(label)
     elif label.startswith("info:"):
-        same = "?ark owl:sameAs ?uri. "
+        same = "?id owl:sameAs ?uri. "
         value = "VALUES ?uri { <%s> } " % label
-    if label.startswith("spar"):
+    elif label.startswith("spar"):
         same = ""
-        value = "VALUES ?uri { %s } " % label
+        value = "VALUES ?id { %s } " % label
     else:
         return jsonify(
             {"head": {"link": [], "vars": ["label"]},
@@ -139,9 +139,9 @@ def label_query(label):
     query = """
         SELECT ?label WHERE {
           %s
-          { ?ark rdfs:label ?label }
-          UNION { ?ark foaf:name ?label }
-          UNION { ?ark dc:title ?label }
+          { ?id rdfs:label ?label }
+          UNION { ?id foaf:name ?label }
+          UNION { ?id dc:title ?label }
           %s
           FILTER (lang(?label) = '%s' or lang(?label) = '')
         } LIMIT 1""" % (same, value, gettext("en"))

@@ -176,14 +176,20 @@ this.options.icons.toggle
         { text: "{{ div.type }}{{ object.order }}", href: null,
           icon: "fa fa-file-archive-o", color: "#bf3fc8", 
           selectable: false, state: { expanded: false},
-          {% if (object.orderlabel or object.title) %}
-          tags: ["{{ object.orderlabel or object.title }}"],
+          {% if (object.orderlabel or object.label or object.title) %}
+          tags: ["{{ object.orderlabel or object.label or object.title }}"],
           {% endif %}
           nodes: [
-          {% if object.dcmetadata %}
+          {% if object.label or object.dcmetadata %}
           { text: "{{ _('Metadata')|title }}", href: null,
             icon: "fa fa-sticky-note", color: "#ce3c41",
             nodes: [
+            {% if object.label %}
+              { text: "{{ _('Label:') }} {{ object.label }}",
+                href: null,
+                icon: "fa fa-sticky-note", color: "#ce3c41",
+                selectable: false, state: { expanded: false},},
+            {% endif %}
             {% for element in object.dcmetadata %}
             {% if element['element'] %}
               { text: "{{ _(element['element']|title + ':') }} {{ element['value'] }}",

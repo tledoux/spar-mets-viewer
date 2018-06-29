@@ -206,6 +206,8 @@ class METSFile(object):
     def parse_spardc(self, dc_xml):
         """parse a spardc to extract information"""
         metadata = []
+        if dc_xml is None:
+            return metadata
         for elem in dc_xml:
             # Skip XML comments
             if elem.tag is etree.Comment:
@@ -410,13 +412,18 @@ class METSFile(object):
             if label is not None and label != 'NP':
                 # print("THL object ", object_data['id'], " orderLabel=", label, file=sys.stderr)
                 object_data['orderlabel'] = label
+        if 'LABEL' in target.attrib:
+            object_data['label'] = target.attrib['LABEL']
         object_data['order'] = target.attrib['ORDER']
         # gather the linked files (TODO handle par and seq)
-        fids = target.findall('.//fptr')
+        fids = target.findall('./fptr')
         object_data['files'] = []
-        if fids:
-            for fid in fids:
-                object_data['files'].append(fid.get('FILEID'))
+        for fid in fids:
+            if 'FILEID' in fid.attrib:
+                object_data['files'].append(fid.attrib['FILEID'])
+            else:
+                for area in fid.findall('.//area'):
+                    object_data['files'].append(area.attrib['FILEID'])
         # print("THL object ", object_data['id'], " file=", object_data['files'], file=sys.stderr)
         # gather dmdsec id from div object
         dmdsec_ids = target.attrib.get('DMDID')
