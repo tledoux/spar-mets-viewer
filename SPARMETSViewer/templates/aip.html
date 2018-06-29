@@ -79,7 +79,7 @@
     <a class="nav-link active" href="#tab1" role="tab" data-toggle="tab"><h5>{{ _('Files (count: %(fc)s)', fc=filecount) }}</h5></a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="#tab2" role="tab" data-toggle="tab"><h5>{{ _('Objects (count: %(fc)s)', fc=objectcount) }}</h5></a>
+    <a class="nav-link" href="#tab2" role="tab" data-toggle="tab"><h5>{{ _('Structure information') }}</h5></a>
   </li>
 </ul>
 
@@ -134,45 +134,7 @@ this.options.icons.toggle
 </div> <!-- tab-pane tab1 -->
 
 <div role="tabpanel" class="tab-pane fade" id="tab2">
-<div id="toolbar2">
-<p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>
-</div>
-<table data-toggle="table" 
-      data-toolbar="#toolbar2"
-      data-icons-prefix="fa"
-      data-buttons-class="default"
-      data-striped="true"
-      data-sortable="true"
-      data-search="true"
-      data-show-refresh="false"
-      data-show-toggle="true"
-      data-show-columns="true"
-      data-show-export="true"
-      data-locale="{{ _('en') }}"
->
-<thead>
-<tr>
-  <th data-sortable="true" data-field="qualifier2">{{ _('Qualifier') }}</th>
-  <th data-sortable="true" data-field="orderlabel2">{{ _('Label') }}</th>
-  <th data-sortable="false" data-field="description2">{{ _('Description') }}</th>
-  <th data-sortable="true" data-field="files2">{{ _('Files') }}</th>
-</tr>
-</thead>
-<tbody>
-    {% for object in objects %}
-        <tr>
-          <td>{{ object.structmap }}{{ object.order }}</td>
-          <td>{{ object.orderlabel if object.orderlabel != None else object.title }}</td>
-          <td>{{ object.description }}</td>
-          <td>
-          {% for fid in object['files'] %}
-          <a href="/aip/{{ mets_file }}/file/{{ fid }}" target="_blank">{{ fid }}</a> 
-          {% endfor %}
-          </td>
-        </tr>
-    {% endfor %}
-</tbody>
-</table>
+  <div id="tree"></div>
 </div> <!-- tab-pane tab2 -->
 </div>
 
@@ -183,6 +145,91 @@ this.options.icons.toggle
   function sizeFormatter(value) {
     return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');
   }
+  var tree = [
+    {% for div in divs %}
+    { text: "{{ _(div.level)|capitalize }} {{ div.type|upper }}", href: null, icon: "fa fa-archive", color: "#c47c48",
+      selectable: false, state: { expanded: true},
+      nodes: [
+        {% set div_set = div.child %}
+    { text: "{{ _('Level') }} {{ div_set.level|upper }}", href: null, icon: "fa fa-folder", color: "#c47c48",
+      selectable: false, state: { expanded: true},
+      nodes: [
+        {% set div_group = div_set.child %}
+    { text: "{{ _('Level') }} {{ div_group.level|upper }}", href: null,
+      icon: "fa fa-folder", color: "#c47c48",
+      selectable: false, state: { expanded: true},
+      nodes: [
+        // Metadata at group level (links to the previous section)
+        { text: "{{ _('Metadata')|title }}", href: null,
+          icon: "fa fa-sticky-note", color: "#ce3c41",
+          selectable: false, state: { expanded: false},
+          nodes: [
+            { text: "{{ _('Descriptive metadata') }}",
+              href: "#descMetaDiv",
+              icon: "fa fa-sticky-note", color: "#ce3c41", selectable: false },
+            { text: "{{ _('PREMIS Events') }}",
+              href: "#premisDiv",
+              icon: "fa fa-sticky-note", color: "#ce3c41", selectable: false },
+          ]
+        }, 
+        {% for object in div_group.objects %}
+        { text: "{{ div.type }}{{ object.order }}", href: null,
+          icon: "fa fa-file-archive-o", color: "#bf3fc8", 
+          selectable: false, state: { expanded: false},
+          {% if (object.orderlabel or object.title) %}
+          tags: ["{{ object.orderlabel or object.title }}"],
+          {% endif %}
+          nodes: [
+          {% if object.dcmetadata %}
+          { text: "{{ _('Metadata')|title }}", href: null,
+            icon: "fa fa-sticky-note", color: "#ce3c41",
+            nodes: [
+            {% for element in object.dcmetadata %}
+            {% if element['element'] %}
+              { text: "{{ _(element['element']|title + ':') }} {{ element['value'] }}",
+                href: null,
+                icon: "fa fa-sticky-note", color: "#ce3c41",
+                selectable: false, state: { expanded: false},},
+            {% endif %}
+            {% endfor %}
+            ]
+          }, 
+          {% endif %}
+          {% for fid in object['files'] %}
+            { text: "{{ fid }}",
+              href: "/aip/{{ mets_file }}/file/{{ fid }}",
+              icon: "fa fa-file", color:"#8cc43d",
+              selectable: false, state: { expanded: true},},
+          {% endfor %}
+          ]
+        },
+        {% endfor %}
+      ]
+      } ] // group
+      } ] // set
+    },
+    {% endfor %}
+  ];
+
+  function getTree() {
+    return tree;
+  }
+  //Tree.prototype.template.bagde = '<span class="badge badge-pill badge-light"></span>'
+  var arbre = $('#tree').treeview({
+    data: getTree(),
+    enableLinks: true,
+    showTags: true,
+    collapseIcon: 'fa fa-chevron-down',
+    expandIcon: 'fa fa-chevron-right',
+    emptyIcon: '',
+    highlightSelected: false,
+    
+  })
+  
+  /*$('.badge').each(function(index, element) {
+      $(element).attr("class", "badge badge-pill badge-light")
+    })*/
+  
   // Enhance the visualisation
   substituteRdfLabel();
   provideRdfTooltip();

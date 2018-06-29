@@ -2,7 +2,6 @@
 """How to parse a METS file."""
 
 from urllib.parse import urlencode
-import datetime
 import math
 import os
 import re
@@ -43,7 +42,6 @@ def extract_date(xml_datetime):
     if m is None:
         return xml_datetime
     return m.group(1) + " " + m.group(2)
-
 
 
 def add_naan(ark):
@@ -115,6 +113,11 @@ class METSFile(object):
         gettext('Ark Identifier:'), gettext('Production Identifier:'),
         gettext('Version Identifier:'), gettext('Channel Identifier:')
     ]
+    # Array of div level to be translated
+    DIV_LEVEL = [
+        gettext('structMap'), gettext('set'), gettext('group'), gettext('object'),
+        gettext('file')
+    ]
 
     def __init__(self, path, dip_id, nickname):
         self.path = os.path.abspath(path)
@@ -151,8 +154,6 @@ class METSFile(object):
             # Only want SIP DC, not file DC
             div = root.find(
                 'structMap[@TYPE="physical"]/div/div[@TYPE="group"]')
-            # div = root.find(
-            # 'structMap/div/div[@TYPE="Directory"][@LABEL="objects"]')
             dmdids = div.get('DMDID')
             # No SIP DC
             if dmdids is None:
@@ -161,7 +162,6 @@ class METSFile(object):
             for dmd in dmds[::-1]:  # Reversed
                 if dmd.get('ID') in dmdids:
                     dc_xml = dmd.find('mdWrap/xmlData/spar_dc')
-                    # dc_xml = dmd.find('mdWrap/xmlData/dublincore')
                     break
             dcmetadata = self.parse_spardc(dc_xml)
         # Add identifiers description
@@ -213,7 +213,7 @@ class METSFile(object):
             dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
 
             dc_element = dict()
-            #print("THL DC attrib", elem.tag, dc_type, elem.text, file=sys.stderr)
+            # print("THL DC attrib", elem.tag, dc_type, elem.text, file=sys.stderr)
             if dc_type is None:
                 dc_element['element'] = elem.tag
             else:
@@ -291,7 +291,8 @@ class METSFile(object):
         # create dict to store data
         premis_event = dict()
         # iterate over elements and write key, value for each to premis_event dictionary
-        self.parse_element_with_given_xpaths(element, premis_event, premis_key_values, with_naan=False)
+        self.parse_element_with_given_xpaths(
+            element, premis_event, premis_key_values, with_naan=False)
 
         # agents
         agents = element.xpath('./event/linkingAgentIdentifier', namespaces=self.NAMESPACES)
@@ -299,22 +300,24 @@ class METSFile(object):
             premis_event['premis_agents'] = []
             for agent in agents:
                 my_agent = dict()
-                self.parse_element_with_given_xpaths(agent, my_agent, agent_key_values, with_naan=True)
+                self.parse_element_with_given_xpaths(
+                    agent, my_agent, agent_key_values, with_naan=True)
                 premis_event['premis_agents'].append(my_agent)
         # objects
-        objects = element.xpath('./event/linkingObjectIdentifier', namespaces=self.NAMESPACES)
-        if objects:
+        link_objects = element.xpath('./event/linkingObjectIdentifier', namespaces=self.NAMESPACES)
+        if link_objects:
             premis_event['premis_objects'] = []
-            for object in objects:
+            for link_object in link_objects:
                 my_object = dict()
-                self.parse_element_with_given_xpaths(object, my_object, object_key_values, with_naan=True)
+                self.parse_element_with_given_xpaths(
+                    link_object, my_object, object_key_values, with_naan=True)
                 if my_object.get('object_role') is None:
                     my_object['object_role'] = 'object'
                 premis_event['premis_objects'].append(my_object)
 
         # Calculate a human readable date
         premis_event['event_date'] = extract_date(premis_event['event_datetime'])
-        
+
         return premis_event
 
     def parse_file_mix(self, element, file_data):
@@ -400,28 +403,27 @@ class METSFile(object):
         """extract information about the object in target"""
         # create new dictionary for this item's info
         object_data = {}
-        # Add information from the file
-        object_data['id'] = target.attrib['ID']  # default value
-        object_data['structmap'] = target.find('../../..').get('TYPE')
+        # Add information from the object
+        object_data['id'] = target.attrib['ID']
         if 'ORDERLABEL' in target.attrib:
-            label = target.attrib['ORDERLABEL']
-            if label != 'NP':
-                print("THL object ", object_data['id'], " orderLabel=", label, file=sys.stderr)
+            label = target.attrib.get('ORDERLABEL')
+            if label is not None and label != 'NP':
+                # print("THL object ", object_data['id'], " orderLabel=", label, file=sys.stderr)
                 object_data['orderlabel'] = label
         object_data['order'] = target.attrib['ORDER']
-        # gather the linked files
-        fids = target.findall('./fptr')
+        # gather the linked files (TODO handle par and seq)
+        fids = target.findall('.//fptr')
+        object_data['files'] = []
         if fids:
-            object_data['files'] = []
-            for fid in fids: 
+            for fid in fids:
                 object_data['files'].append(fid.get('FILEID'))
-        #print("THL object ", object_data['id'], " with files ", object_data['files'], file=sys.stderr)
+        # print("THL object ", object_data['id'], " file=", object_data['files'], file=sys.stderr)
         # gather dmdsec id from div object
         dmdsec_ids = target.attrib.get('DMDID')
         if dmdsec_ids is None:
             return object_data
 
-        #object_data['dmdsec_id'] = dmdsec_ids
+        # TODO handle admSec !!!
         for dmdsec_id in dmdsec_ids.split(" "):
             # parse dmdSec
             dmdsec_xpath = ".//dmdSec[@ID='{}']".format(dmdsec_id)
@@ -435,13 +437,36 @@ class METSFile(object):
             for elt in spardc:
                 # print("THL see ", elt['element'], "=", elt['value'], file=sys.stderr)
                 if elt['element'] == 'title':
-                    print("THL object ", object_data['id'], " title=", elt['value'], file=sys.stderr)
                     object_data['title'] = elt['value']
                 elif elt['element'] == 'description':
-                    print("THL object ", object_data['id'], " description=", elt['value'], file=sys.stderr)
                     object_data['description'] = elt['value']
             break
         return object_data
+
+    def extract_div_info(self, target, mets_root):
+        """extract information about the structMap in target"""
+        div_data = {}
+        # Add information about the structmap
+        div_data['level'] = target.tag
+        div_data['type'] = target.attrib['TYPE']
+        # Handle the SET level
+        set_data = {}
+        set_element = target.find('./div[@TYPE="set"]')
+        set_data['level'] = set_element.attrib['TYPE']
+        div_data['child'] = set_data
+        # Handle the GROUP level
+        group_data = {}
+        group_element = set_element.find('.//div[@TYPE="group"]')
+        group_data['level'] = group_element.attrib['TYPE']
+        set_data['child'] = group_data
+        # Handle the objects
+        objects_element = group_element.findall('./div[@TYPE="object"]')
+        objects_data = []
+        for object_element in objects_element:
+            object_data = self.extract_object_info(object_element, mets_root)
+            objects_data.append(object_data)
+        group_data['objects'] = objects_data
+        return div_data
 
     def extract_file_info(self, target, mets_root):
         """extract information about the file in target"""
@@ -515,16 +540,6 @@ class METSFile(object):
         if file_data['bytes'] != 0:
             file_data['size'] = convert_size(file_data['bytes'])
 
-        # create human-readable version of last modified Unix time stamp
-        # (if file was characterized by FITS)
-        if 'fits_modified_unixtime' in file_data:
-            # convert milliseconds to seconds
-            unixtime = int(file_data['fits_modified_unixtime'])/1000
-            # convert from unix to iso8601
-            file_data['modified_ois'] = datetime.datetime.fromtimestamp(unixtime).isoformat()
-        else:
-            file_data['modified_ois'] = ''
-
         # gather dmdsec id from filesec
         dmdsec_ids = target.get('DMDID', '')
         file_data['dmdsec_id'] = dmdsec_ids
@@ -572,7 +587,6 @@ class METSFile(object):
         for event in events:
             dcmetadata.append(event)
 
-
     def parse_mets(self):
         """
         Parse METS file and save data to METS model
@@ -580,9 +594,9 @@ class METSFile(object):
         # create list
         original_files = []
         original_file_count = 0
-        objects = []
-        objects_count = 0
-        
+        divs = []
+        principal_level = 'group'
+
         # get METS file name
         mets_filename = os.path.basename(self.path)
 
@@ -612,10 +626,9 @@ class METSFile(object):
             original_files.append(file_data)
 
         # gather info for each structmap
-        for target in mets_root.findall(".//structMap//div[@TYPE='object']"):
-            objects_count += 1
-            object = self.extract_object_info(target, mets_root)
-            objects.append(object)
+        for target in mets_root.findall(".//structMap"):
+            div = self.extract_div_info(target, mets_root)
+            divs.append(div)
 
         # gather dublin core metadata from most recent dmdSec
         dc_metadata = self.parse_dc(root)
@@ -630,8 +643,8 @@ class METSFile(object):
         else:
             self.nickname += " - " + self.ark
 
-        mets_instance = METS(mets_filename, self.nickname,
-                             original_files, dc_metadata, objects, original_file_count)
+        mets_instance = METS(mets_filename, self.nickname, principal_level,
+                             original_files, dc_metadata, divs, original_file_count)
         isSuccess = True
         try:
             db.session.add(mets_instance)

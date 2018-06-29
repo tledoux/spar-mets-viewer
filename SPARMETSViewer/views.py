@@ -94,7 +94,8 @@ def label_query(label):
                  "results": {
                     "distinct": "false", "ordered": "true",
                     "bindings": [{"label": {"type": "literal",
-                                            "xml:lang": "fr", "value": "Cr\u00E9ation de paquet"}}]}})
+                                            "xml:lang": "fr", 
+                                            "value": "Cr\u00E9ation de paquet"}}]}})
         elif label == "sparprovenance:hasPerformer":
             return jsonify(
                 {"head": {"link": [], "vars": ["label"]},
@@ -296,9 +297,10 @@ def retrieve_ark():
 def show_aip(mets_file):
     """Show a METS file"""
     mets_instance = METS.query.filter_by(metsfile='%s' % (mets_file)).first()
+    level = mets_instance.level
     original_files = mets_instance.metslist
     dcmetadata = mets_instance.dcmetadata
-    objects = mets_instance.objects
+    divs = mets_instance.divs
     filecount = mets_instance.originalfilecount
     aip_uuid = mets_file
     for element in dcmetadata:
@@ -309,8 +311,8 @@ def show_aip(mets_file):
 
     return render_template(
         'aip.html', original_files=original_files,
-        mets_file=mets_file, dcmetadata=dcmetadata, objects=objects,
-        filecount=filecount, objectcount=len(objects), aip_uuid=aip_uuid
+        mets_file=mets_file, level=level, dcmetadata=dcmetadata, divs=divs,
+        filecount=filecount, aip_uuid=aip_uuid
     )
 
 
