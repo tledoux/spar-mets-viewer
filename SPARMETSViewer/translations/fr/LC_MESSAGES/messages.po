@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-06-30 01:01+0200\n"
+"POT-Creation-Date: 2018-06-30 13:28+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,141 +18,177 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: SPARMETSViewer/parsemets.py:107 SPARMETSViewer/templates/detail.html:20
+#: SPARMETSViewer/identifiers.py:12
+msgid "bytes"
+msgstr "octets"
+
+#: SPARMETSViewer/identifiers.py:12
+msgid "KB"
+msgstr "Ko"
+
+#: SPARMETSViewer/identifiers.py:12
+msgid "MB"
+msgstr "Mo"
+
+#: SPARMETSViewer/identifiers.py:12
+msgid "GB"
+msgstr "Go"
+
+#: SPARMETSViewer/identifiers.py:13
+msgid "TB"
+msgstr "To"
+
+#: SPARMETSViewer/identifiers.py:13
+msgid "PB"
+msgstr "Po"
+
+#: SPARMETSViewer/identifiers.py:13
+msgid "EB"
+msgstr "Eo"
+
+#: SPARMETSViewer/identifiers.py:14
+msgid "ZB"
+msgstr "Zo"
+
+#: SPARMETSViewer/identifiers.py:14
+msgid "YB"
+msgstr "Yo"
+
+#: SPARMETSViewer/parsemets.py:42 SPARMETSViewer/templates/detail.html:20
 msgid "Title:"
 msgstr "Titre :"
 
-#: SPARMETSViewer/parsemets.py:107
+#: SPARMETSViewer/parsemets.py:42
 msgid "Subject:"
 msgstr "Sujet :"
 
-#: SPARMETSViewer/parsemets.py:107 SPARMETSViewer/templates/detail.html:23
+#: SPARMETSViewer/parsemets.py:42 SPARMETSViewer/templates/detail.html:23
 msgid "Description:"
 msgstr "Description :"
 
-#: SPARMETSViewer/parsemets.py:107 SPARMETSViewer/templates/detail.html:26
+#: SPARMETSViewer/parsemets.py:42 SPARMETSViewer/templates/detail.html:26
 msgid "Source:"
 msgstr "Source :"
 
-#: SPARMETSViewer/parsemets.py:108
+#: SPARMETSViewer/parsemets.py:43
 msgid "Language:"
 msgstr "Langue :"
 
-#: SPARMETSViewer/parsemets.py:108
+#: SPARMETSViewer/parsemets.py:43
 msgid "Relation:"
 msgstr "Relation :"
 
-#: SPARMETSViewer/parsemets.py:109
+#: SPARMETSViewer/parsemets.py:44
 msgid "Coverage:"
 msgstr "Couverture :"
 
-#: SPARMETSViewer/parsemets.py:109
+#: SPARMETSViewer/parsemets.py:44
 msgid "Creator:"
 msgstr "Auteur :"
 
-#: SPARMETSViewer/parsemets.py:109
+#: SPARMETSViewer/parsemets.py:44
 msgid "Contributor:"
 msgstr "Contributeur :"
 
-#: SPARMETSViewer/parsemets.py:109
+#: SPARMETSViewer/parsemets.py:44
 msgid "Publisher:"
 msgstr "Editeur :"
 
-#: SPARMETSViewer/parsemets.py:110
+#: SPARMETSViewer/parsemets.py:45
 msgid "Rights:"
 msgstr "Droits :"
 
-#: SPARMETSViewer/parsemets.py:110
+#: SPARMETSViewer/parsemets.py:45
 msgid "Date:"
 msgstr "Date :"
 
-#: SPARMETSViewer/parsemets.py:110
+#: SPARMETSViewer/parsemets.py:45
 msgid "Type:"
 msgstr "Type :"
 
-#: SPARMETSViewer/parsemets.py:111
+#: SPARMETSViewer/parsemets.py:46
 msgid "Format:"
 msgstr "Format :"
 
-#: SPARMETSViewer/parsemets.py:111
+#: SPARMETSViewer/parsemets.py:46
 msgid "Identifier:"
 msgstr "Identifiant :"
 
-#: SPARMETSViewer/parsemets.py:112
+#: SPARMETSViewer/parsemets.py:47
 msgid "Audience:"
 msgstr "Audience :"
 
-#: SPARMETSViewer/parsemets.py:112
+#: SPARMETSViewer/parsemets.py:47
 msgid "Provenance:"
 msgstr "Provenance :"
 
-#: SPARMETSViewer/parsemets.py:113 SPARMETSViewer/templates/upload.html:9
+#: SPARMETSViewer/parsemets.py:48 SPARMETSViewer/templates/upload.html:9
 msgid "Ark Identifier:"
 msgstr "Identifiant ARK :"
 
-#: SPARMETSViewer/parsemets.py:113
+#: SPARMETSViewer/parsemets.py:48
 msgid "Production Identifier:"
 msgstr "Identifiant de production :"
 
-#: SPARMETSViewer/parsemets.py:114
+#: SPARMETSViewer/parsemets.py:49
 msgid "Version Identifier:"
 msgstr "Identifiant de version :"
 
-#: SPARMETSViewer/parsemets.py:114
+#: SPARMETSViewer/parsemets.py:49
 msgid "Channel Identifier:"
 msgstr "Identifiant de chaîne :"
 
-#: SPARMETSViewer/parsemets.py:118
+#: SPARMETSViewer/parsemets.py:53
 msgid "structMap"
 msgstr "carte de structure"
 
-#: SPARMETSViewer/parsemets.py:118
+#: SPARMETSViewer/parsemets.py:53
 msgid "set"
 msgstr "ensemble"
 
-#: SPARMETSViewer/parsemets.py:118
+#: SPARMETSViewer/parsemets.py:53
 msgid "group"
 msgstr "groupe"
 
-#: SPARMETSViewer/parsemets.py:118
+#: SPARMETSViewer/parsemets.py:53
 msgid "object"
 msgstr "objet"
 
-#: SPARMETSViewer/parsemets.py:119
+#: SPARMETSViewer/parsemets.py:54
 msgid "file"
 msgstr "fichier"
 
-#: SPARMETSViewer/templates/aip.html:102 SPARMETSViewer/templates/index.html:24
-#: SPARMETSViewer/views.py:147
+#: SPARMETSViewer/rdfquery.py:75 SPARMETSViewer/templates/aip.html:102
+#: SPARMETSViewer/templates/index.html:24
 msgid "en"
 msgstr "fr"
 
-#: SPARMETSViewer/views.py:193
+#: SPARMETSViewer/views.py:122
 msgid "No file part"
 msgstr "Pas de fichier"
 
-#: SPARMETSViewer/views.py:203
+#: SPARMETSViewer/views.py:132
 msgid "No selected file"
 msgstr "Pas de fichier séléctionné"
 
-#: SPARMETSViewer/views.py:221 SPARMETSViewer/views.py:283
+#: SPARMETSViewer/views.py:150 SPARMETSViewer/views.py:212
 msgid "METS already exists"
 msgstr "Le fichier METS existe déjà"
 
-#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:229
-#: SPARMETSViewer/views.py:291
+#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:158
+#: SPARMETSViewer/views.py:220
 msgid "Success! METS file uploaded!"
 msgstr "Succès ! Fichier METS téléchargé !"
 
-#: SPARMETSViewer/views.py:232
+#: SPARMETSViewer/views.py:161
 msgid "Not allowed selected file"
 msgstr "Fichier sélectionné non autorisé"
 
-#: SPARMETSViewer/views.py:248
+#: SPARMETSViewer/views.py:177
 msgid "No ARK part"
 msgstr "Pas d'ARK fourni"
 
-#: SPARMETSViewer/views.py:270
+#: SPARMETSViewer/views.py:199
 msgid "METS not found"
 msgstr "METS non trouvé"
 
