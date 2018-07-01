@@ -3,9 +3,9 @@
 import os
 import sys
 
-from flask import request, render_template
+from flask import request, render_template, Response
 from flask_babel import gettext
-from requests import get  # to make GET request
+from requests import get, codes  # to make GET request
 from werkzeug.utils import secure_filename
 
 from SPARMETSViewer import app, babel, db
@@ -13,7 +13,7 @@ from config import LANGUAGES
 
 from .models import METS
 from .parsemets import METSFile
-from .rdfquery import label_query
+from .rdfquery import label_query, from_sparql_results_to_json
 
 
 @babel.localeselector
@@ -80,6 +80,34 @@ def label_access(label):
     if platform is None:
         return
     return label_query(label, platform)
+
+
+@app.route("/query", methods=['GET', 'POST'])
+def query_json():
+    """Make a SPARQL query and get back a simple json for table"""
+    if request.method == 'POST':
+        query = request.form.get("query")
+    else:
+        query = request.args.get("query")
+    if query is None:
+        resp = Response("No query", status=codes.bad_request, mimetype="text/plain")
+        return resp
+    app.logger.debug("THL QUERY with %s", query)
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+    endpoint = app.config['ACCESS_ENDPOINT']
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    app.logger.debug("THL SPARQL response %s", response.status_code)
+    if response.status_code != codes.ok:
+        resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
+        return resp
+    results = response.json()
+    # app.logger.debug("THL JSON response %s", results)
+    return from_sparql_results_to_json(results)
 
 
 @app.route("/sparql", methods=['GET', 'POST'])

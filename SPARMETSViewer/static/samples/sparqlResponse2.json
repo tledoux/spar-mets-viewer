@@ -1,0 +1,6 @@
+
+{ "head": { "link": [], "vars": ["ark", "identifiant", "titre"] },
+  "results": { "distinct": false, "ordered": true, "bindings": [
+    { "ark": { "type": "uri", "value": "ark:/12148/bpt6k206840w" }	, "identifiant": { "type": "literal", "value": "206840" }	, "titre": { "type": "literal", "value": "Impressions de Sicile / Princesse Marie Wolkonsky" }},
+    { "ark": { "type": "uri", "value": "ark:/12148/bpt6k206841w" }	, "identifiant": { "type": "literal", "value": "206841" }	, "titre": { "type": "literal", "value": "Mon test" }}
+  ] } }

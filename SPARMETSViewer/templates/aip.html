@@ -1,4 +1,12 @@
 {% extends "base.html" %}
+{% block stylesheet %}
+    <link rel="stylesheet" href="/static/css/bootstrap-treeview.min.css">
+    <link rel="stylesheet" href="/static/css/timeline.css">
+{% endblock %}
+{% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/bootstrap-treeview.min.js"></script>
+{%endblock%}
+
 {% block content %}
 <h3>{{ aip_uuid|safe }}</h3>
 <p><strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
@@ -221,10 +229,12 @@ this.options.icons.toggle
     return tree;
   }
   //Tree.prototype.template.bagde = '<span class="badge badge-pill badge-light"></span>'
+  //.attr('class', node.tagClass)
   var arbre = $('#tree').treeview({
     data: getTree(),
     enableLinks: true,
     showTags: true,
+    tagClass: 'badge badge-pill badge-light',
     collapseIcon: 'fa fa-chevron-down',
     expandIcon: 'fa fa-chevron-right',
     emptyIcon: '',
