@@ -56,12 +56,12 @@ def label_query(label, platform):
     elif label.startswith("info:"):
         same = "?id owl:sameAs ?uri. "
         value = "VALUES ?uri { <%s> } " % label
-    elif label.startswith("spar:"):
+    elif label.startswith("spar"):
         same = ""
         value = "VALUES ?id { %s } " % label
     elif is_uuid(label):
         same = ""
-        value = "VALUES ?id { sparagent:%s } " % label
+        value = "VALUES ?id { <info:bnf/spar/agent/%s> } " % label
     else:
         return __fake_empty_result()
 

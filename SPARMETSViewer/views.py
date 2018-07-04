@@ -96,7 +96,12 @@ def query_json():
     platform = app.config['ACCESS_PLATFORM']
     if platform is None:
         return
+
     endpoint = app.config['ACCESS_ENDPOINT']
+    if platform == 'TEST':
+        if "SUM(" in query:
+            endpoint = app.config['REPORT_ENDPOINT']
+
     response = get(
         endpoint,
         headers={'Accept': 'application/sparql-results+json'},
@@ -135,6 +140,15 @@ def search_ark():
     """Access to the search choice"""
     return render_template(
         'search.html',
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=app.config['ACCESS_PLATFORM'])
+
+
+@app.route("/report", methods=['GET', 'POST'])
+def report():
+    """Access to the search choice"""
+    return render_template(
+        'report.html',
         ark_prefix=app.config['ARK_PREFIX'],
         access_platform=app.config['ACCESS_PLATFORM'])
 
