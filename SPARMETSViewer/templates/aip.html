@@ -13,16 +13,16 @@
 
 {% if dcmetadata %}
 <div class="card bg-light border-secondary mb-3">
-<div class="card-header"><h5><a data-toggle="collapse" href="#descMetaDiv" aria-expanded="true" aria-controls="descMetaDiv">{{ _('Descriptive metadata') }}</a></h5>
+<div class="card-header"><h5><a data-toggle="collapse" href="#descMetaDiv" aria-expanded="true" aria-controls="descMetaDiv"><span class="fa fa-list-alt"></span> {{ _('Descriptive metadata') }}</a></h5>
 </div>
 <div class="collapse show" id="descMetaDiv">
 <div class="card-body">
   {% for element in dcmetadata %}
   {% if element['element'] %}
   {% if element['element'] == 'channel identifier' %}
-    <p><strong>{{ gettext(element['element']|title + ':') }}</strong> <span class="rdfTooltip" data-toggle="tooltip">{{ element['value']|safe }}</span></p>
+    <p><strong>{{ gettext(element['element'])|title + ':'}}</strong> <span class="rdfTooltip" data-toggle="tooltip">{{ element['value']|safe }}</span></p>
   {% else %}
-    <p><strong>{{ gettext(element['element']|title + ':') }}</strong> {{ element['value']|safe }}</p>
+    <p><strong>{{ gettext(element['element'])|title }}{% if element['qualifier'] %} ({{ element['qualifier'] }}){% endif %} :</strong> {{ element['value']|safe }}</p>
   {% endif %}
   {% endif %}
   {% endfor %}
@@ -31,7 +31,7 @@
 </div>
 
 <div class="card bg-light border-secondary mb-3">
-<div class="card-header"><h5><a data-toggle="collapse" href="#premisDiv" aria-expanded="true" aria-controls="premisDiv">{{ _('PREMIS Events') }}</a></h5>
+<div class="card-header"><h5><a data-toggle="collapse" href="#premisDiv" aria-expanded="true" aria-controls="premisDiv"><span class="fa fa-calendar"></span> {{ _('PREMIS Events') }}</a></h5>
 </div>
 <div class="collapse show" id="premisDiv">
 <div class="card-body well">
@@ -57,8 +57,13 @@
 {% if premis_event['premis_agents'] %}
   {% for premis_agent in premis_event['premis_agents'] %}
     <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_agent['agent_role']|title}}">{{ premis_agent['agent_role'] }}</span> :</strong>
+    {% if premis_agent['agent_name'] %}
+    {{ premis_agent['agent_name'] }} - {{ premis_agent['agent_kind'] }}{% if premis_agent['agent_note'] %} - {{ premis_agent['agent_note'] }}{% endif %}
+    <i>(<span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>)</i>
+    {% else %}
     <span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>
     <i>({{ premis_agent['agent_type'] }})</i>
+    {% endif %}
     <br/>
   {% endfor %}
 {% endif %}
@@ -134,7 +139,7 @@ this.options.icons.toggle
           <td>{{ original_file['bytes'] }}</td>
           <td>{{ original_file['use'] }}</td>
           <td>{{ original_file['id'] }}</td>
-          <td data-tableexport-display="none"><a href="/aip/{{ mets_file }}/file/{{ original_file['id'] }}" target="_blank"><button class="btn btn-primary"><span class="fa fa-eye"></span> {{ _('View') }}</button></a></td>
+          <td data-tableexport-display="none"><a href="/aip/{{ mets_file }}/file/{{ original_file['id'] }}"><button class="btn btn-primary"><span class="fa fa-eye"></span> {{ _('View') }}</button></a></td>
         </tr>
     {% endfor %}
 </tbody>
@@ -162,6 +167,22 @@ this.options.icons.toggle
     { text: "{{ _('Level') }} {{ div_set.level|upper }}", href: null, icon: "fa fa-folder", color: "#c47c48",
       selectable: false, state: { expanded: true},
       nodes: [
+          {% if div_set.dcmetadata %}
+          { text: "{{ _('Metadata')|title }}", href: null,
+            icon: "fa fa-list-alt", color: "#ce3c41",
+            nodes: [
+            {% for element in div_set.dcmetadata %}
+            {% if element['element'] %}
+              { text: "{{ _(element['element'])|title }}{% if element['qualifier'] %} ({{ element['qualifier'] }}){% endif %} : {{ element['value'] }}",
+                href: null,
+                icon: "fa fa-sticky-note", color: "#ce3c41",
+                selectable: false, state: { expanded: false},
+              },
+            {% endif %}
+            {% endfor %}
+            ]
+          }, 
+          {% endif %} // End of metadata
         {% set div_group = div_set.child %}
     { text: "{{ _('Level') }} {{ div_group.level|upper }}", href: null,
       icon: "fa fa-folder", color: "#c47c48",
@@ -169,19 +190,19 @@ this.options.icons.toggle
       nodes: [
         // Metadata at group level (links to the previous section)
         { text: "{{ _('Metadata')|title }}", href: null,
-          icon: "fa fa-sticky-note", color: "#ce3c41",
+          icon: "fa fa-list-alt", color: "#ce3c41",
           selectable: false, state: { expanded: false},
           nodes: [
             { text: "{{ _('Descriptive metadata') }}",
               href: "#descMetaDiv",
-              icon: "fa fa-sticky-note", color: "#ce3c41", selectable: false },
+              icon: "fa fa-list-alt", color: "#ce3c41", selectable: false },
             { text: "{{ _('PREMIS Events') }}",
               href: "#premisDiv",
-              icon: "fa fa-sticky-note", color: "#ce3c41", selectable: false },
+              icon: "fa fa-calendar", color: "#ce3c41", selectable: false },
           ]
         }, 
         {% for object in div_group.objects %}
-        { text: "{{ div.type }}{{ object.order }}", href: null,
+        { text: "{{ _('Level') }} {{ object.level|upper }} {{ div.type }}{{ object.order }}", href: null,
           icon: "fa fa-file-archive-o", color: "#bf3fc8", 
           selectable: false, state: { expanded: false},
           {% if (object.orderlabel or object.label or object.title) %}
@@ -190,7 +211,7 @@ this.options.icons.toggle
           nodes: [
           {% if object.label or object.dcmetadata %}
           { text: "{{ _('Metadata')|title }}", href: null,
-            icon: "fa fa-sticky-note", color: "#ce3c41",
+            icon: "fa fa-list-alt", color: "#ce3c41",
             nodes: [
             {% if object.label %}
               { text: "{{ _('Label:') }} {{ object.label }}",
@@ -200,7 +221,7 @@ this.options.icons.toggle
             {% endif %}
             {% for element in object.dcmetadata %}
             {% if element['element'] %}
-              { text: "{{ _(element['element']|title + ':') }} {{ element['value'] }}",
+              { text: "{{ _(element['element'])|title }}{% if element['qualifier'] %} ({{ element['qualifier'] }}){% endif %} : {{ element['value'] }}",
                 href: null,
                 icon: "fa fa-sticky-note", color: "#ce3c41",
                 selectable: false, state: { expanded: false},},
@@ -209,11 +230,60 @@ this.options.icons.toggle
             ]
           }, 
           {% endif %}
+
+          {% if object.premis_events %}
+          { text: "{{ _('PREMIS Events') }}", href: null,
+            icon: "fa fa-calendar", color: "#ce3c41",
+            nodes: [
+            {% for premis_event in object.premis_events %} // THL object
+              { text: "{{ _('Event:') }} <span class='rdfLabel' lookup='sparprovenance:{{ premis_event['event_type'] }}'>{{ premis_event['event_type'] }}</span>",
+                href: null,
+                icon: "fa fa-sticky-note", color: "#ce3c41",
+                selectable: false, state: { expanded: false },
+                nodes: [
+                  { text: "{{ _('Event datetime:') }} {{ premis_event['event_date'] }}",
+                    href: null,
+                    icon: "fa fa-sticky-note", color: "#ce3c41",
+                    selectable: false, state: { expanded: false },
+                  }, // Other fields in premis:event
+                  {% if premis_event['event_detail'] %}
+                  { text: "{{ _('Event detail:') }} {{ premis_event['event_detail'] }}",
+                    href: null,
+                    icon: "fa fa-sticky-note", color: "#ce3c41",
+                    selectable: false, state: { expanded: false },
+                  },
+                  {% endif %}
+                  {% if premis_event['event_outcome'] %}
+                  { text: "{{ _('Event outcome:') }} {{ premis_event['event_outcome'] }}",
+                    href: null,
+                    icon: "fa fa-sticky-note", color: "#ce3c41",
+                    selectable: false, state: { expanded: false },
+                  },
+                  {% endif %}
+                  {% if premis_event['event_detail_note'] %}
+                  { text: "{{ _('Event detail note:') }} {{ premis_event['event_detail_note'] }}",
+                    href: null,
+                    icon: "fa fa-sticky-note", color: "#ce3c41",
+                    selectable: false, state: { expanded: false },
+                  },
+                  {% endif %}
+                ]
+              },
+            {% endfor %}
+            ]
+          }, 
+          {% endif %}
+
           {% for fid in object['files'] %}
             { text: "{{ fid }}",
+            {% if '/' in fid %}
+              href: "/aip/{{ mets_file }}/file/{{ fid.split('/')[1] }}",
+            {% else %}
               href: "/aip/{{ mets_file }}/file/{{ fid }}",
+            {% endif %}
               icon: "fa fa-file", color:"#8cc43d",
-              selectable: false, state: { expanded: true},},
+              selectable: false, state: { expanded: true},
+            },
           {% endfor %}
           ]
         },
@@ -228,8 +298,7 @@ this.options.icons.toggle
   function getTree() {
     return tree;
   }
-  //Tree.prototype.template.bagde = '<span class="badge badge-pill badge-light"></span>'
-  //.attr('class', node.tagClass)
+
   var arbre = $('#tree').treeview({
     data: getTree(),
     enableLinks: true,
@@ -241,11 +310,7 @@ this.options.icons.toggle
     highlightSelected: false,
     
   })
-  
-  /*$('.badge').each(function(index, element) {
-      $(element).attr("class", "badge badge-pill badge-light")
-    })*/
-  
+
   // Enhance the visualisation
   substituteRdfLabel();
   provideRdfTooltip();

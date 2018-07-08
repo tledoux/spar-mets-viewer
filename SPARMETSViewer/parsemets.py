@@ -53,6 +53,23 @@ class METSFile(object):
         gettext('structMap'), gettext('set'), gettext('group'), gettext('object'),
         gettext('file')
     ]
+    # Compression decoder (MIX 6.1.3.1 Compression scheme value labels.)
+    MIX_COMPRESSION = {
+        "1": "uncompressed", "2": "CCITT 1D",
+        "3": "CCITT Group 3", "4": "CCITT Group 4",
+        "5": "LZW", "6": "JPEG", "7": "ISO JPEG", "8": "Deflate",
+        "32661": "JBIG", "32766": "NEXT",
+        "32771": "RLE with word alignment",
+        "32773": "PackBits", "32774": "NeXT 2-bit encoding", "32775": "ThunderScan 4-bit encoding",
+        "32895": "RasterPadding in CT or MP",
+        "32896": "RLE for LW", "32897": "RLE for HC", "32898": "RLE for BL",
+        "32908": "Pixar 10-bit LZW", "32909": "Pixar companded 11-bit ZIP encoding",
+        "32946": "PKZIP-style Deflate encoding",
+        "32947": "Kodak DCS",
+        "34676": "SGI 32-bit Log Luminance encoding",
+        "34677": "SGI 24-bit Log Luminance encoding",
+        "34712": "JPEG 2000"
+    }
 
     def __init__(self, path, dip_id, nickname):
         self.path = os.path.abspath(path)
@@ -151,22 +168,16 @@ class METSFile(object):
 
             dc_element = dict()
             # print("THL DC attrib", elem.tag, dc_type, elem.text, file=sys.stderr)
-            if dc_type is None:
-                dc_element['element'] = elem.tag
-            else:
-                if elem.tag in {'identifier', 'description', 'relation'}:
-                    annot = self.strip_prefix(dc_type)
-                    if annot == 'ark':
-                        dc_element['element'] = elem.tag
-                    else:
-                        # print("THL DC attrib", elem.tag, dc_type, file=sys.stderr)
-                        dc_element['element'] = elem.tag + ' (' + annot + ')'
-                else:
-                    dc_element['element'] = elem.tag
-            dc_element['value'] = elem.text
+            dc_element['element'] = elem.tag
+            if dc_type is not None:
+                annot = self.strip_prefix(dc_type)
+                if annot != 'ark':
+                    dc_element['qualifier'] = annot
 
             if elem.tag == 'relation':
                 dc_element['value'] = add_naan(elem.text)
+            else:
+                dc_element['value'] = elem.text
 
             if dc_element['value'] is not None:
                 metadata.append(dc_element)
@@ -202,6 +213,24 @@ class METSFile(object):
         }
         # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, xml_file_elements)
+
+    def find_agent(self, my_agent, mets_root):
+        """find the agent refered by its UUID"""
+        agent_desc_key_values = {
+            'agent_name': './agentName',
+            'agent_kind': './agentType',
+            'agent_note': './agentNote'
+        }
+        uuid = my_agent['agent_value']
+        xpath_agent = "/mets/amdSec/digiprovMD/mdWrap/xmlData/"\
+            "agent[./agentIdentifier/agentIdentifierValue='%s']" % uuid
+        # print("THL xpath_agent ", xpath_agent, file=sys.stderr)
+        agent_desc = mets_root.xpath(xpath_agent, namespaces=self.NAMESPACES)
+        if not agent_desc:
+            return
+        # print("THL agent ", uuid, " agent desc=", agent_desc[0], file=sys.stderr)
+        self.parse_element_with_given_xpaths(
+                    agent_desc[0], my_agent, agent_desc_key_values, with_naan=False)
 
     def parse_premis_event(self, element):
         """parse a premis event"""
@@ -239,7 +268,10 @@ class METSFile(object):
                 my_agent = dict()
                 self.parse_element_with_given_xpaths(
                     agent, my_agent, agent_key_values, with_naan=True)
+                if my_agent['agent_type'] == 'UUID':
+                    self.find_agent(my_agent, element)
                 premis_event['premis_agents'].append(my_agent)
+
         # objects
         link_objects = element.xpath('./event/linkingObjectIdentifier', namespaces=self.NAMESPACES)
         if link_objects:
@@ -264,7 +296,9 @@ class METSFile(object):
             'mix_dimension': 'concat(./mix//imageHeight/text(), "x", ./mix//imageWidth/text())',
             'mix_height': './mix//imageHeight',
             'mix_width': './mix//imageWidth',
-            'mix_bitsPerSample': './mix//bitsPerSampleValue'
+            'mix_bitsPerSample': './mix//bitsPerSampleValue',
+            'mix_compression': './mix//compressionScheme',
+            'mix_compression_ratio': './mix//compressionRatio'
         }
         # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
@@ -350,7 +384,7 @@ class METSFile(object):
         if 'LABEL' in target.attrib:
             object_data['label'] = target.attrib['LABEL']
         object_data['order'] = target.attrib['ORDER']
-        # gather the linked files (TODO handle par and seq)
+        # gather the linked files
         fids = target.findall('./fptr')
         object_data['files'] = []
         for fid in fids:
@@ -358,31 +392,49 @@ class METSFile(object):
                 object_data['files'].append(fid.attrib['FILEID'])
             else:
                 for area in fid.findall('.//area'):
-                    object_data['files'].append(area.attrib['FILEID'])
-        # print("THL object ", object_data['id'], " file=", object_data['files'], file=sys.stderr)
+                    sep = area.find('..').tag
+                    area_order = area.attrib['ORDER']
+                    fileid = area.attrib['FILEID']
+                    object_data['files'].append(sep + area_order + '/' + fileid)
+
         # gather dmdsec id from div object
         dmdsec_ids = target.attrib.get('DMDID')
-        if dmdsec_ids is None:
-            return object_data
+        if dmdsec_ids is not None:
+            for dmdsec_id in dmdsec_ids.split(" "):
+                # parse dmdSec
+                dmdsec_xpath = ".//dmdSec[@ID='{}']".format(dmdsec_id)
+                # Only one section per ID
+                section = mets_root.find(dmdsec_xpath)
+                if section is None:
+                    continue
+                dc_xml = section.find('mdWrap/xmlData/spar_dc')
+                spardc = self.parse_spardc(dc_xml)
+                object_data['dcmetadata'] = spardc
+                for elt in spardc:
+                    # print("THL see ", elt['element'], "=", elt['value'], file=sys.stderr)
+                    if elt['element'] == 'title':
+                        object_data['title'] = elt['value']
+                    elif elt['element'] == 'description':
+                        object_data['description'] = elt['value']
+                break
+        amdsec_ids = target.attrib.get('ADMID')
+        if amdsec_ids is not None:
+            object_data['premis_events'] = []
+            for amdsec_id in amdsec_ids.split(" "):
+                # parse amdSec
+                amdsec_xpath = ".//amdSec/*[@ID='{}']".format(amdsec_id)
+                # Only one section per ID
+                section = mets_root.find(amdsec_xpath)
+                if section is None:
+                    continue
+                # parse premis events related to file
+                premis_event = section.find("./mdWrap[@MDTYPE='PREMIS:EVENT']/xmlData")
+                if premis_event is not None:
+                    object_data['premis_events'].append(self.parse_premis_event(premis_event))
+                    continue
+            # Sort the premis events by datetime
+            object_data['premis_events'].sort(key=lambda event: event["event_datetime"])
 
-        # TODO handle admSec !!!
-        for dmdsec_id in dmdsec_ids.split(" "):
-            # parse dmdSec
-            dmdsec_xpath = ".//dmdSec[@ID='{}']".format(dmdsec_id)
-            # Only one section per ID
-            section = mets_root.find(dmdsec_xpath)
-            if section is None:
-                continue
-            dc_xml = section.find('mdWrap/xmlData/spar_dc')
-            spardc = self.parse_spardc(dc_xml)
-            object_data['dcmetadata'] = spardc
-            for elt in spardc:
-                # print("THL see ", elt['element'], "=", elt['value'], file=sys.stderr)
-                if elt['element'] == 'title':
-                    object_data['title'] = elt['value']
-                elif elt['element'] == 'description':
-                    object_data['description'] = elt['value']
-            break
         return object_data
 
     def extract_div_info(self, target, mets_root):
@@ -395,7 +447,35 @@ class METSFile(object):
         set_data = {}
         set_element = target.find('./div[@TYPE="set"]')
         set_data['level'] = set_element.attrib['TYPE']
+        # gather dmdsec id from div set
+        dmdsec_ids = set_element.attrib.get('DMDID')
+        if dmdsec_ids is not None:
+            for dmdsec_id in dmdsec_ids.split(" "):
+                # parse dmdSec
+                dmdsec_xpath = ".//dmdSec[@ID='{}']".format(dmdsec_id)
+                # Only one section per ID
+                section = mets_root.find(dmdsec_xpath)
+                if section is None:
+                    continue
+                dc_xml = section.find('mdWrap/xmlData/spar_dc')
+                if dc_xml is not None:
+                    spardc = self.parse_spardc(dc_xml)
+                    set_data['dcmetadata'] = spardc
+                    for elt in spardc:
+                        if elt['element'] == 'title':
+                            set_data['title'] = elt['value']
+                        elif elt['element'] == 'description':
+                            set_data['description'] = elt['value']
+                else:
+                    dc_xml = section.find('mdRef')
+                    if dc_xml is not None:
+                        set_data['dcmetadata'] = []
+                        elt = {}
+                        elt['element'] = 'relation'
+                        elt['value'] = add_naan(dc_xml.get('{http://www.w3.org/1999/xlink}href'))
+                        set_data['dcmetadata'].append(elt)
         div_data['child'] = set_data
+
         # Handle the GROUP level
         group_data = {}
         group_element = set_element.find('.//div[@TYPE="group"]')
@@ -406,6 +486,7 @@ class METSFile(object):
         objects_data = []
         for object_element in objects_element:
             object_data = self.extract_object_info(object_element, mets_root)
+            object_data['level'] = object_element.attrib['TYPE']
             objects_data.append(object_data)
         group_data['objects'] = objects_data
         return div_data

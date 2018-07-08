@@ -4,6 +4,7 @@
 from urllib.parse import urlencode
 import math
 import re
+import sys
 
 from flask_babel import gettext
 
@@ -36,11 +37,15 @@ def abstract_ark(ark):
 
 def extract_date(xml_datetime):
     """Extract the date and time from an XML date time"""
-    DT_REGEX = re.compile(r'(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}).*')
+    DT_REGEX = re.compile(r'(\d{4}-\d{2}-\d{2})(T(\d{2}:\d{2}:\d{2}))?.*')
     m = DT_REGEX.match(xml_datetime)
     if m is None:
+        print("THL bad date ", xml_datetime, file=sys.stderr)
         return xml_datetime
-    return m.group(1) + " " + m.group(2)
+    if m.group(2):
+        return m.group(1) + " " + m.group(3)
+    else:
+        return m.group(1)
 
 
 def is_uuid(value):

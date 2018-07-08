@@ -1,0 +1,5 @@
+
+{ "head": { "link": [], "vars": ["channel", "package", "files", "size"] },
+  "results": { "distinct": false, "ordered": true, "bindings": [
+    { "channel": { "type": "literal", "value": "fil_addn_a" }	, "packages": { "type": "typed-literal", "datatype":"http://www.w3.org/2001/XMLSCHEMA#integer", "value": "509" }	, "files": { "type": "typed-literal", "datatype":"http://www.w3.org/2001/XMLSCHEMA#integer", "value": "3438" }	, "size": { "type": "typed-literal", "datatype":"http://www.w3.org/2001/XMLSCHEMA#integer", "value": "26130236139" }}
+  ] } }

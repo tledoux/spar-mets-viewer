@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 <h3>{{ _('File ID:') }} {{ original_file['id'] }}</h3>
-<p><strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
-
+<p><a href="/aip/{{ mets_file }}"><button class="btn btn-primary"><span class="fa fa-reply"></span> {{ _('Back') }}</button></a>
+<strong>{{ _('METS File:') }}</strong> {{ mets_file }}</p>
 <div class="card bg-light border-secondary mb-3">
 <div class="card-header"><h5><a data-toggle="collapse" href="#generalDetailsDiv" aria-expanded="true" aria-controls="generalDetailsDiv">{{ _('General details') }}</a></h5>
 </div>
@@ -48,6 +48,12 @@
 {% endif %}
 {% if original_file['mix_bitsPerSample'] %}
 <p><strong>{{ _('Bits per sample:') }}</strong> {{ original_file['mix_bitsPerSample'] }}</p>
+{% endif %}
+{% if original_file['mix_compression'] %}
+<p><strong>{{ _('Compression:') }}</strong> {{ mix_compression[original_file['mix_compression']] }}</p>
+{% endif %}
+{% if original_file['mix_compression_ratio'] %}
+<p><strong>{{ _('Compression ratio:') }}</strong> {{ original_file['mix_compression_ratio'] }}</p>
 {% endif %}
 {% if original_file['mix_rawoutput'] %}
 <p><strong>{{ _('Mix output:') }}</strong></p><textarea> {{ original_file['mix_rawoutput'] }}</textarea>
@@ -140,8 +146,13 @@
   {% for premis_agent in premis_event['premis_agents'] %}
     <p>&nbsp;&nbsp;&nbsp;
     <strong><span class="rdfLabel" lookup="sparprovenance:has{{ premis_agent['agent_role']|title}}">{{ premis_agent['agent_role'] }}</span> :</strong>
+    {% if premis_agent['agent_name'] %}
+    {{ premis_agent['agent_name'] }} - {{ premis_agent['agent_kind'] }}{% if premis_agent['agent_note'] %} - {{ premis_agent['agent_note'] }}{% endif %}
+    <i>(<span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>)</i>
+    {% else %}
     <span class="rdfTooltip" data-toggle="tooltip">{{ premis_agent['agent_value']|safe }}</span>
     <i>({{ premis_agent['agent_type'] }})</i>
+    {% endif %}
     </p>
   {% endfor %}
 {% endif %}

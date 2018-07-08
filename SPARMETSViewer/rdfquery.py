@@ -35,6 +35,8 @@ def label_query(label, platform):
             return __fake_literal_result("Num\u00E9risation")
         elif label == "sparprovenance:packageCreation":
             return __fake_literal_result("Cr\u00E9ation de paquet")
+        elif label == "sparprovenance:digitizationRequests":
+            return __fake_literal_result("Demande de num\u00E9risation")
         elif label == "sparprovenance:hasPerformer":
             return __fake_literal_result("ex\u00E9cutant")
         elif label == "ark:/12148/br2d2wf":

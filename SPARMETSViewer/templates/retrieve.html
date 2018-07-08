@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="well">
-  <p>{{ _('Fill in the fields to generate a report on the platform %(platform)s.', platform=access_platform) }}</p>
+  <p>{{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}</p>
   </div>
  
   <div class="form-control">
-    <div class="form-group">
+    <div class="form-group row">
       <label for="channel" class="control-label col-md-2">{{ _('Channel') }}</label>
       <!--
 SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
@@ -43,6 +43,18 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         <option value="ark:/12148/br2d2cd7">fil_ta_mnpp01</option>
         <option value="ark:/12148/br2d2dkn">fil_ta_mqb01</option>
       </select>
+    <!--</div>
+    <div class="form-group">-->
+      <label for="origin_id" class="control-label col-md-2">{{ _('Origin identifier') }}</label>
+      <input type="text" name="origin_id" id="origin_id" class="col-md-4" placeholder="206840"/>
+    </div>
+    <div class="form-group row">
+      <label for="title" class="control-label col-md-2">{{ _('Title') }}</label>
+      <input type="text" name="title" id="title" class="col-md-4" placeholder="Mon titre"/>
+    <!--</div>
+    <div class="form-group">-->
+      <label for="type" class="control-label col-md-2">{{ _('Type') }}</label>
+      <input type="text" name="type" id="type" class="col-md-4" placeholder="monograph"/>
     </div>
     <div class="form-group">
       <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
@@ -61,17 +73,19 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         data-buttons-class="default"
         data-striped="true"
         data-sortable="true"
-        data-search="true"
-        data-show-refresh="false"
+        data-search="false"
+        data-show-refresh="true"
         data-show-toggle="true"
-        data-card-view="true"
-        data-show-columns="false"
+        data-show-columns="true"
         data-show-export="true"
-        data-pagination="false"
-        data-only-info-pagination="true"
+        data-pagination="true"
+        data-side-pagination="server"
         data-pagination-v-align="both"
         data-locale="{{ _('en') }}"
-        data-unique-id="channel"
+        data-unique-id="ark"
+        data-method="post"
+        data-url="/customquery"
+        data-query-params="queryParams"
   >
   </table>
   <br/><br />
@@ -82,57 +96,61 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
     var $button = $("#btnSubmit")
     $(function () {
         $button.click(function () {
-            exec()
-            //$table.bootstrapTable('load', exec());
+            //exec()
+            $table.bootstrapTable('refresh');
         });
     });
+    function queryParams(params) {
+      console.log("queryParams" + params)
+      // Get the filters
+      params.filter = {}
+      params.filter.channel = $("#channel").val()
+      var originId = $("#origin_id").val()
+      if (originId) {
+        params.filter.originId = originId
+      }
+      var type = $("#type").val()
+      if (type) params.filter.type = type
+      var title = $("#title").val()
+      if (title) params.filter.title = title
+      var period = $("#period").val()
+      if (period) params.filter.period = period
+      // Get the columns
+      
+      console.log("queryParams " + JSON.stringify(params))
+      return params
+    }
     
-    function numberFormatter(value) {
-      return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');
+    function addDetail(value, row, index, field) {
+      return '<a href="/upload?ark=' + row['ark'] + '"><button class="btn btn-primary"><span class="fa fa-arrow-circle-down"></span> {{ _("Upload") }}</span></button></a>'
     }
 
-    function sizeFormatter(value) {
-      var units = ['{{ _("bytes") }}', '{{ _("KB") }}', '{{ _("MB") }}', '{{ _("GB") }}', '{{ _("TB") }}']
-      if (value == 0) return '0';
-      var i = parseInt(Math.floor(Math.log(value) / Math.log(1000)));
-      var r = (value / Math.pow(1000, i));
-      if (r >= 99.995 ||  i == 0) {
-        return r.toFixed(0) + ' ' + units[i];
-      } else {
-        return r.toFixed(2) + ' ' + units[i];
-      }
-    }
-    
     function initTable() {
         $table.bootstrapTable({
             exportOptions: { ignoreColumn: [3] },
             columns:
                 [
                     {
-                        title: '{{ _("channel")|title }}',
-                        field: 'channel',
+                        title: '{{ _("ark")|title }}',
+                        field: 'ark',
                         sortable: true,
-                        align: 'left',
                         switchable: false,
                     }, {
-                        title: '{{ _("packages")|title }}',
-                        field: 'packages',
-                        sortable: true,
-                        align: 'right',
-                        formatter: numberFormatter,
-                        switchable: false,
-                    }, {
-                        title: '{{ _("files")|title }}',
-                        field: 'files',
-                        align: 'right',
-                        formatter: numberFormatter,
+                        title: '{{ _("identifier")|title }}',
+                        field: 'identifiant',
                         sortable: true,
                     }, {
-                        title: '{{ _("size")|title }}',
-                        field: 'size',
+                        title: '{{ _("title")|title }}',
+                        field: 'titre',
                         sortable: true,
-                        align: 'right',
-                        formatter: sizeFormatter,
+                    }, {
+                        title: '{{ _("details")|title }}',
+                        field: 'details',
+                        valign: 'middle',
+                        'tableexport-display': 'none',
+                        sortable: false,
+                        align: 'right', 
+                        formatter: addDetail
                     }
                 ],
         })
@@ -145,26 +163,29 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
       var endpoint = "/query"
       // Retrieve the fields
       var channel = $("#channel").val()
-      var period = $("#period").val()
+      var originId = $("#origin_id").val()
+      var type = $("#type").val()
+      var title = $("#title").val()
       // Build the SPARQL
       var sparql = "SELECT " +
-        " (STRAFTER(STR(?uri), 'context/') AS ?channel) " +
-        " (COUNT(?p) AS ?packages) (SUM(xsd:integer(?n_files)) AS ?files) " +
-        " (SUM(xsd:integer(?size_p)) AS ?size) " +
-        "WHERE { " +
-        " { SELECT ?uri ?p ?n_files ?size_p " + (period?"(max(?date) AS ?dc) ":"") +
-        "   WHERE { GRAPH ?g { "+
-        "     ?p sparcontext:isMemberOf ?c." +
-        "     OPTIONAL { ?p sparfixity:size ?size_p } "+
-        "     OPTIONAL { ?p sparfixity:fileCount ?n_files } "+
-        (period?"     ?p sparprovenance:hasEvent ?e. ?e a sparprovenance:ingestCompletion.":"") +
-        (period?"     ?e dc:date ?date.":"") +
-        "   }" +
-        "   ?c a sparcontext:channel. ?c owl:sameAs ?uri." +
-        "   VALUES ?c { <" + channel + ">}" +
-        " } }" +
-        (period ?" FILTER (STRSTARTS(STR(?dc), '" + period + "'))":"") +
-        " } LIMIT 10"
+        "?ark (?prodId AS ?identifiant) ?titre WHERE { " +
+        "?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p." +
+        "GRAPH ?g {" +
+        "?p a sparstructure:group. " +
+        "?p sparcontext:isMemberOf <" + channel + ">. " +
+        "?p sparreference:productionIdentifier ?prodId. " +
+        "OPTIONAL {?p dc:title ?titre} " +
+        "OPTIONAL {?p dc:type ?type} "
+      if (originId) {
+        sparql += "?p sparreference:productionIdentifier \"" + originId + "\". "
+      }
+      if (type) {
+        sparql += "?p dc:type \"" + type + "\"."
+      }
+      if (title) {
+        sparql += " FILTER(CONTAINS(?titre, \"" + title + "\")) "
+      }
+      sparql += "} } ORDER BY ?prodId LIMIT 20"
       console.log("SPARQL [" + endpoint + "]: " + sparql)
 
       // Launch the query and invoke render() when results arrived

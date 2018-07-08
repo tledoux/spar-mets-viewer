@@ -82,6 +82,70 @@ def label_access(label):
     return label_query(label, platform)
 
 
+@app.route("/customquery", methods=['POST'])
+def custom_query_json():
+    """Make a SPARQL query and get back a simple json for table"""
+    # if request.method == 'POST':
+    #    query = request.form.get("query")
+    # else:
+    #    query = request.args.get("query")
+    app.logger.debug(
+        "Custom query with content-type %s %s",
+        request.headers.get('Content-Type'),
+        request.is_json)
+    if not request.is_json:
+        resp = Response("No json parameters", status=codes.bad_request, mimetype="text/plain")
+        return resp
+    content = request.get_json()
+    for key in content:
+        app.logger.debug("Custom query %s", key)
+    # if query is None:
+    #    resp = Response("No query", status=codes.bad_request, mimetype="text/plain")
+    #    return resp
+    # app.logger.debug("THL QUERY with %s", query)
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+
+    endpoint = app.config['ACCESS_ENDPOINT']
+    channel = content['filter']['channel']
+    app.logger.debug("THL QUERY with %s", channel)
+    filter = ""
+    try:
+        originId = content['filter']['originId']
+        filter += "?p sparreference:productionIdentifier \"" + originId + "\"."
+    except KeyError as e:
+        app.logger.error("THL QUERY no originId %s", e)
+        pass
+    limit = "OFFSET " + str(content['offset']) + " LIMIT " + str(content['limit'])
+
+    query = """SELECT
+        ?ark (?prodId AS ?identifiant) ?titre
+        WHERE {
+        ?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p.
+        GRAPH ?g {
+        ?p a sparstructure:group.
+        ?p sparcontext:isMemberOf <%s>.
+        ?p sparreference:productionIdentifier ?prodId.
+        OPTIONAL {?p dc:title ?titre}
+        OPTIONAL {?p dc:type ?type}
+        %s
+        } } ORDER BY ?prodId %s""" % (channel, filter, limit)
+
+    app.logger.debug("THL QUERY with %s", query)
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    app.logger.debug("THL SPARQL response %s", response.status_code)
+    if response.status_code != codes.ok:
+        resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
+        return resp
+    results = response.json()
+    # app.logger.debug("THL JSON response %s", results)
+    return from_sparql_results_to_json(results)
+
+
 @app.route("/query", methods=['GET', 'POST'])
 def query_json():
     """Make a SPARQL query and get back a simple json for table"""
@@ -153,6 +217,15 @@ def report():
         access_platform=app.config['ACCESS_PLATFORM'])
 
 
+@app.route("/retrieve", methods=['GET', 'POST'])
+def retrieve():
+    """Access to the search choice"""
+    return render_template(
+        'retrieve.html',
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=app.config['ACCESS_PLATFORM'])
+
+
 @app.route('/uploadsuccess', methods=['GET', 'POST'])
 def upload_file():
     """Make the upload"""
@@ -213,6 +286,7 @@ def retrieve_ark():
     """Make the retrieval from ark"""
     error = None
     if request.method == 'POST':
+        nickname = request.form.get("nickname")
         ark = request.form.get("ark")
         # check if the post request has the file part
         if ark is None or not ark.startswith("b"):
@@ -246,7 +320,10 @@ def retrieve_ark():
                 access_platform=app.config['ACCESS_PLATFORM'])
 
         aip_name = os.path.basename(filename)
-        mets = METSFile(mets_path, aip_name, access_platform)
+        name = access_platform
+        if nickname:
+            name += " - " + nickname
+        mets = METSFile(mets_path, aip_name, name)
         success = mets.parse_mets()
         # delete file from uploads folder
         os.remove(mets_path)
@@ -311,4 +388,7 @@ def show_file(mets_file, fid):
         if original_file["id"] == fid:
             target_original_file = original_file
             break
-    return render_template('detail.html', original_file=target_original_file, mets_file=mets_file)
+    return render_template(
+        'detail.html',
+        original_file=target_original_file, mets_file=mets_file,
+        mix_compression=METSFile.MIX_COMPRESSION)
