@@ -25,6 +25,9 @@
 {% if original_file['source'] %}
 <p><strong>{{ _('Source:') }}</strong> {{ original_file['source'] }}</p>
 {% endif %}
+{% if original_file['identifier'] %}
+<p><strong>{{ _('Identifier:') }}</strong> {{ original_file['identifier'] }}</p>
+{% endif %}
 </div>
 </div>
 </div>
@@ -50,10 +53,13 @@
 <p><strong>{{ _('Bits per sample:') }}</strong> {{ original_file['mix_bitsPerSample'] }}</p>
 {% endif %}
 {% if original_file['mix_compression'] %}
-<p><strong>{{ _('Compression:') }}</strong> {{ mix_compression[original_file['mix_compression']] }}</p>
+<p><strong>{{ _('Compression:') }}</strong> {{ original_file['mix_compression'] }}</p>
 {% endif %}
 {% if original_file['mix_compression_ratio'] %}
 <p><strong>{{ _('Compression ratio:') }}</strong> {{ original_file['mix_compression_ratio'] }}</p>
+{% endif %}
+{% if original_file['mix_icc_profile'] %}
+<p><strong>{{ _('ICC Profile:') }}</strong> {{ original_file['mix_icc_profile'] }}</p>
 {% endif %}
 {% if original_file['mix_rawoutput'] %}
 <p><strong>{{ _('Mix output:') }}</strong></p><textarea> {{ original_file['mix_rawoutput'] }}</textarea>

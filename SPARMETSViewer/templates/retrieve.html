@@ -1,4 +1,16 @@
 {% extends "base.html" %}
+{% block stylesheet %}
+    <link rel="stylesheet" href="/static/css/bootstrap-select.min.css">
+    <!-- Correct bootstrap-select bug -->
+    <style type="text/css">
+    .open > .dropdown-menu { display: block; }
+    </style>
+{% endblock %}
+{% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/bootstrap-select.min.js"></script>
+    <script type="text/javascript" src="/static/js/defaults-en_US.min.js"></script>
+    <script type="text/javascript" src="/static/js/defaults-fr_FR.min.js"></script>
+{%endblock%}
 {% block content %}
   <div class="well">
   <p>{{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}</p>
@@ -13,7 +25,8 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
   ?c owl:sameAs ?uri.
 } ORDER BY ?uri LIMIT 100
       -->
-      <select id="channel" class="control-label col-md-4">
+      <select id="channel" class="selectpicker">
+        <option value="" selected="selected"><i>{{ _('Select a channel') }}</i></option>
         <option value="ark:/12148/br2d2f5z">fil_addn_a</option>
         <option value="ark:/12148/br2d2f66">fil_addn_b</option>
         <option value="ark:/12148/br2d26qc">fil_aud_b</option>
@@ -26,7 +39,7 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         <option value="ark:/12148/br2d293n">fil_dl_nego_agf01</option>
         <option value="ark:/12148/br2d2c88">fil_dl_nego_livnum_a</option>
         <option value="ark:/12148/br2d2c9h">fil_dl_nego_livnum_b</option>
-        <option value="ark:/12148/br2d22g" selected="selected">fil_num_cons_a</option>
+        <option value="ark:/12148/br2d22g">fil_num_cons_a</option>
         <option value="ark:/12148/br2d2bxn">fil_num_cons_b</option>
         <option value="ark:/12148/br2d2csw">fil_num_cons_c</option>
         <option value="ark:/12148/br2d2f10">fil_num_cons_d</option>
@@ -43,42 +56,44 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         <option value="ark:/12148/br2d2cd7">fil_ta_mnpp01</option>
         <option value="ark:/12148/br2d2dkn">fil_ta_mqb01</option>
       </select>
-    <!--</div>
-    <div class="form-group">-->
-      <label for="origin_id" class="control-label col-md-2">{{ _('Origin identifier') }}</label>
-      <input type="text" name="origin_id" id="origin_id" class="col-md-4" placeholder="206840"/>
+      <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
+      <input type="text" name="period" id="period" class="col-md-4" placeholder="2018-06" pattern="(\d{4}(-\d{2})?(-\d{2})?)" title= "{{ _('Valid period is year (2018) or month (2018-06).') }}"/>
     </div>
     <div class="form-group row">
-      <label for="title" class="control-label col-md-2">{{ _('Title') }}</label>
-      <input type="text" name="title" id="title" class="col-md-4" placeholder="Mon titre"/>
-    <!--</div>
-    <div class="form-group">-->
-      <label for="type" class="control-label col-md-2">{{ _('Type') }}</label>
-      <input type="text" name="type" id="type" class="col-md-4" placeholder="monograph"/>
+      <label for="displayColumns" class="control-label col-md-2">{{ _('Display') }}</label> <!---->
+      <select id="displayColumns" class="selectpicker show-tick" data-width="75%" data-actions-box="true" multiple="multiple">
+        <option value="title">{{ _('Title') }}</option>
+        <!--<option value="creator">{{ _('Creator') }}</option>-->
+        <option value="file_count">{{ _('File count') }}</option>
+        <option value="size">{{ _('Size') }}</option>
+        <option value="record_no">{{ _('Record number') }}</option>
+        <option value="call_no">{{ _('Call number') }}</option>
+        <option value="ingest_date" selected>{{ _('Ingest date') }}</option>
+      </select>
     </div>
-    <div class="form-group">
-      <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
-      <input type="text" name="period" id="period" class="col-md-4" placeholder="2018-06" pattern="(\d{4}(-\d{2})?)" title= "{{ _('Valid period is year (2018) or month (2018-06).') }}"/>
-    </div>
+
     <button class="btn btn-primary" id="btnSubmit" type="button">{{ _('Submit') }}</button>
   </div>
   <hr />
   <div id="result">
   <div id="toolbar">
-  <p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>
+  <!--<p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>-->
   </div>
   <table id="table"
         data-toolbar="#toolbar"
         data-icons-prefix="fa"
         data-buttons-class="default"
         data-striped="true"
-        data-sortable="true"
+        data-sortable="false"
         data-search="false"
-        data-show-refresh="true"
+        data-show-refresh="false"
         data-show-toggle="true"
-        data-show-columns="true"
+        data-show-columns="false"
         data-show-export="true"
         data-pagination="true"
+        data-pagination-size="50"
+        data-page-list="[50, 100, 500]"
+        data-pagination-loop="false"
         data-side-pagination="server"
         data-pagination-v-align="both"
         data-locale="{{ _('en') }}"
@@ -86,124 +101,122 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         data-method="post"
         data-url="/customquery"
         data-query-params="queryParams"
+        data-response-handler="queryResponseHandler"
   >
   </table>
   <br/><br />
   </div>
 
   <script>
+    var columnsChanged = false
     var $table = $("#table")
     var $button = $("#btnSubmit")
+    var $displayColumns = $("#displayColumns")
+    var $selectChannel = $("#channel")
+    
+    function getCurrentYearMonth() {
+      function pad(num) {
+        if (num < 10) { return '0' + num; } else { return num; }
+      }
+      var d = new Date();
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+    }
+    
+    // onReady function
     $(function () {
         $button.click(function () {
-            //exec()
+            if (columnsChanged) {
+              // Call refreshOptions to change the columns
+              $table.bootstrapTable('refreshOptions', {
+                  //exportOptions: { ignoreColumn: [3] },
+                  columns: calculateColumns()
+              })
+              columnsChanged = false
+            }
             $table.bootstrapTable('refresh');
         });
-    });
+        
+        // Monitor modification in display columns
+        $displayColumns.on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+          columnsChanged = true
+        });
+        $("#period").val(getCurrentYearMonth())
+        // Initialize the table
+        initTable()
+     });
+    // Function to build the appropriate query
     function queryParams(params) {
-      console.log("queryParams" + params)
+      console.log("queryParams begin " + JSON.stringify(params))
       // Get the filters
       params.filter = {}
       params.filter.channel = $("#channel").val()
-      var originId = $("#origin_id").val()
-      if (originId) {
-        params.filter.originId = originId
+      if (params.filter.channel == '') {
+        // $("#channel").addClass('btn-danger')
+        return false
       }
-      var type = $("#type").val()
-      if (type) params.filter.type = type
-      var title = $("#title").val()
-      if (title) params.filter.title = title
+      
       var period = $("#period").val()
       if (period) params.filter.period = period
       // Get the columns
-      
-      console.log("queryParams " + JSON.stringify(params))
+      params.columns = ["ark"]
+      var columns = $("#displayColumns").val()
+      if (columns) {
+        params.columns = ["ark"].concat(columns)
+      }
+      console.log("queryParams end " + JSON.stringify(params))
       return params
+    }
+    // Handle the response if need be (adding total...)
+    function queryResponseHandler(res) {
+      console.log("queryResponseHandler begin " + JSON.stringify(res))
+      return res;
     }
     
     function addDetail(value, row, index, field) {
       return '<a href="/upload?ark=' + row['ark'] + '"><button class="btn btn-primary"><span class="fa fa-arrow-circle-down"></span> {{ _("Upload") }}</span></button></a>'
     }
 
-    function initTable() {
-        $table.bootstrapTable({
-            exportOptions: { ignoreColumn: [3] },
-            columns:
-                [
+    function calculateColumns() {
+      var columns = [
                     {
                         title: '{{ _("ark")|title }}',
                         field: 'ark',
-                        sortable: true,
-                        switchable: false,
-                    }, {
-                        title: '{{ _("identifier")|title }}',
-                        field: 'identifiant',
-                        sortable: true,
-                    }, {
-                        title: '{{ _("title")|title }}',
-                        field: 'titre',
-                        sortable: true,
-                    }, {
-                        title: '{{ _("details")|title }}',
-                        field: 'details',
-                        valign: 'middle',
-                        'tableexport-display': 'none',
                         sortable: false,
-                        align: 'right', 
-                        formatter: addDetail
-                    }
-                ],
+                        switchable: false,
+                    },
+      ]
+      $("#displayColumns option:selected").each(function(item) {
+        var $this = $(this)
+        // console.log("Column ", $this.text(), "=", $this.val())
+        columns.push({
+                        title: $this.text(),
+                        field: $this.val(),
+                        sortable: false,
+                        switchable: false,
+                    })
+      })
+      /*
+      columns.push({
+        title: '{{ _("details")|title }}',
+        field: 'details',
+        valign: 'middle',
+        'tableexport-display': 'none',
+        sortable: false,
+        align: 'right', 
+        formatter: addDetail
+      })
+      */
+      return columns
+    }
+
+    function initTable() {
+        $table.bootstrapTable({
+            //exportOptions: { ignoreColumn: [3] },
+            columns: calculateColumns()
         })
-    };
-
-    function exec() {
-      $button.attr("disabled", "disabled")
-      $table.bootstrapTable('showLoading')
-      
-      var endpoint = "/query"
-      // Retrieve the fields
-      var channel = $("#channel").val()
-      var originId = $("#origin_id").val()
-      var type = $("#type").val()
-      var title = $("#title").val()
-      // Build the SPARQL
-      var sparql = "SELECT " +
-        "?ark (?prodId AS ?identifiant) ?titre WHERE { " +
-        "?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p." +
-        "GRAPH ?g {" +
-        "?p a sparstructure:group. " +
-        "?p sparcontext:isMemberOf <" + channel + ">. " +
-        "?p sparreference:productionIdentifier ?prodId. " +
-        "OPTIONAL {?p dc:title ?titre} " +
-        "OPTIONAL {?p dc:type ?type} "
-      if (originId) {
-        sparql += "?p sparreference:productionIdentifier \"" + originId + "\". "
-      }
-      if (type) {
-        sparql += "?p dc:type \"" + type + "\"."
-      }
-      if (title) {
-        sparql += " FILTER(CONTAINS(?titre, \"" + title + "\")) "
-      }
-      sparql += "} } ORDER BY ?prodId LIMIT 20"
-      console.log("SPARQL [" + endpoint + "]: " + sparql)
-
-      // Launch the query and invoke render() when results arrived
-      $.getJSON(endpoint, { query: sparql }).done(render)
     }
-    
-    function render(json) {
-      $button.attr("disabled", null)
-      $table.bootstrapTable('hideLoading')
 
-      $table.bootstrapTable('load', json)
-    }
-    // 
-    
-    $(function () {
-        initTable();
-    });
-  </script>
+</script>
 {% endblock %}
 
 

@@ -39,14 +39,14 @@ class METSFile(object):
     }
     # Array of Dublic Elements to be translated
     DC_ELEMENTS = [
-        gettext('Title:'), gettext('Subject:'), gettext('Description:'), gettext('Source:'),
-        gettext('Language:'), gettext('Relation:'),
-        gettext('Coverage:'), gettext('Creator:'), gettext('Contributor:'), gettext('Publisher:'),
-        gettext('Rights:'), gettext('Date:'), gettext('Type:'),
-        gettext('Format:'), gettext('Identifier:'),
-        gettext('Audience:'), gettext('Provenance:'),
-        gettext('Ark Identifier:'), gettext('Production Identifier:'),
-        gettext('Version Identifier:'), gettext('Channel Identifier:')
+        gettext('title'), gettext('subject'), gettext('description'), gettext('source'),
+        gettext('language'), gettext('relation'),
+        gettext('coverage'), gettext('creator'), gettext('contributor'), gettext('publisher'),
+        gettext('rights'), gettext('date'), gettext('type'),
+        gettext('format'), gettext('identifier'),
+        gettext('audience'), gettext('provenance'),
+        gettext('Ark Identifier'), gettext('Production Identifier'),
+        gettext('Version Identifier'), gettext('Channel Identifier')
     ]
     # Array of div level to be translated
     DIV_LEVEL = [
@@ -259,6 +259,7 @@ class METSFile(object):
         # iterate over elements and write key, value for each to premis_event dictionary
         self.parse_element_with_given_xpaths(
             element, premis_event, premis_key_values, with_naan=False)
+        # TODO iterate on eventOutcomeInformation
 
         # agents
         agents = element.xpath('./event/linkingAgentIdentifier', namespaces=self.NAMESPACES)
@@ -298,10 +299,15 @@ class METSFile(object):
             'mix_width': './mix//imageWidth',
             'mix_bitsPerSample': './mix//bitsPerSampleValue',
             'mix_compression': './mix//compressionScheme',
-            'mix_compression_ratio': './mix//compressionRatio'
+            'mix_compression_ratio': './mix//compressionRatio',
+            'mix_icc_profile': './mix//iccProfileName'
         }
         # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
+        if 'mix_compression' in file_data:
+            compressionScheme = file_data['mix_compression']
+            if compressionScheme.isdigit():
+                file_data['mix_compression'] = self.MIX_COMPRESSION[compressionScheme]
         file_data['mix_present'] = 'yes'
 
     def parse_file_textmd(self, element, file_data):
@@ -364,7 +370,8 @@ class METSFile(object):
         key_values = {
             'title': './spar_dc/title',
             'description': './spar_dc/description',
-            'source': './spar_dc/source'
+            'source': './spar_dc/source',
+            'identifier': './spar_dc/identifier'
         }
         # iterate over elements and write key, value for each to file_data dictionary
         self.parse_element_with_given_xpaths(element, file_data, key_values)
@@ -521,6 +528,11 @@ class METSFile(object):
             premis_object = section.find("./mdWrap[@MDTYPE='PREMIS:OBJECT']/xmlData")
             if premis_object is not None:
                 self.parse_file_premis_object(premis_object, file_data)
+                continue
+            # is it a sourceMD section
+            sourcemd = section.find("./mdWrap[@MDTYPE='DC']/xmlData")
+            if sourcemd is not None:
+                self.parse_file_dc(sourcemd, file_data)
                 continue
             # parse premis events related to file
             premis_event = section.find("./mdWrap[@MDTYPE='PREMIS:EVENT']/xmlData")

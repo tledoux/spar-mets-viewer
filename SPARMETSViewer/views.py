@@ -111,39 +111,97 @@ def custom_query_json():
     channel = content['filter']['channel']
     app.logger.debug("THL QUERY with %s", channel)
     filter = ""
-    try:
-        originId = content['filter']['originId']
-        filter += "?p sparreference:productionIdentifier \"" + originId + "\"."
-    except KeyError as e:
-        app.logger.error("THL QUERY no originId %s", e)
-        pass
+    if "period" in content['filter']:
+        period = content['filter']['period']
+        filter += "FILTER (STRSTARTS(STR(?ingest_date), '%s'))" % period
     limit = "OFFSET " + str(content['offset']) + " LIMIT " + str(content['limit'])
+    columns = content['columns']
+    head = "?ark "
+    triples = """?p sparprovenance:hasEvent ?e.
+        ?e a sparprovenance:ingestCompletion.
+        ?e dc:date ?ingest_date. """
+    withOrder = False
+    withReception = False
+    for col in columns:
+        if col == "ingest_date":
+            head += "?ingest_date "
+        elif col == "file_count":
+            head += "?file_count "
+            triples += " ?p sparfixity:fileCount ?file_count } "
+        elif col == "size":
+            head += "?size "
+            triples += " ?p sparfixity:size ?size } "
+        elif col == "title":
+            head += "?title "
+            triples += " OPTIONAL { ?p dc:title ?title } "
+        elif col == "title":
+            head += "?title "
+            triples += " OPTIONAL { ?p dc:title ?title } "
+        elif col == "creator":
+            head += "(GROUP_CONCAT(DISTINCT ?creato; separator=', ') AS ?creator) "
+            triples += " OPTIONAL { ?p dc:creator ?creato } "
+        elif col == "call_no":
+            head += "?call_no "
+            triples += " OPTIONAL { ?p sparreference:callNumber ?call_no } "
+        elif col == "record_no":
+            head += "?record_no "
+            triples += " OPTIONAL { ?p dc:relation ?record_no } "
+        elif col == "contract_no":
+            head += "?contract_no "
+            triples += " OPTIONAL { ?p dc:rights ?contract_no } "
+        elif col == "contract_no":
+            head += "?contract_no "
+            triples += " OPTIONAL { ?p dc:rights ?contract_no } "
+        elif col == "order_no":
+            withOrder = True
+            head += "?order_no "
+        elif col == "order_date":
+            withOrder = True
+            head += "?order_date "
+        elif col == "order_issuer":
+            withOrder = True
+            head += "?order_issuer "
+        elif col == "reception_no":
+            withReception = True
+            head += "?reception_no "
+        elif col == "reception_date":
+            withReception = True
+            head += "?reception_date "
+    if withOrder:
+        triples += """ OPTIONAL { ?p sparprovenance:hasEvent ?eOrder.
+            ?eOrder a sparprovenance:orderPlacing.
+            ?eOrder dc:date ?order_date.
+            ?eOrder sparprovenance:hasIssuer ?order_issuer.
+            ?eOrder dc:description ?order_no. }"""
+    if withReception:
+        triples += """ OPTIONAL { ?p sparprovenance:hasEvent ?eReception.
+            ?eReception a sparprovenance:documentReception.
+            ?eReception dc:date ?reception_date.
+            ?eReception dc:description ?reception_no. }"""
 
     query = """SELECT
-        ?ark (?prodId AS ?identifiant) ?titre
+        %s
         WHERE {
         ?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p.
         GRAPH ?g {
         ?p a sparstructure:group.
         ?p sparcontext:isMemberOf <%s>.
-        ?p sparreference:productionIdentifier ?prodId.
-        OPTIONAL {?p dc:title ?titre}
-        OPTIONAL {?p dc:type ?type}
         %s
-        } } ORDER BY ?prodId %s""" % (channel, filter, limit)
+        %s
+        } } %s""" % (head, channel, triples, filter, limit)
 
     app.logger.debug("THL QUERY with %s", query)
     response = get(
         endpoint,
         headers={'Accept': 'application/sparql-results+json'},
         params={'query': query, 'format': 'application/sparql-results+json'})
-    app.logger.debug("THL SPARQL response %s", response.status_code)
+    app.logger.debug("THL SPARQL %s response %s", endpoint, response.status_code)
     if response.status_code != codes.ok:
         resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
         return resp
     results = response.json()
     # app.logger.debug("THL JSON response %s", results)
-    return from_sparql_results_to_json(results)
+    return from_sparql_results_to_json(results, withCounts=True)
 
 
 @app.route("/query", methods=['GET', 'POST'])
@@ -390,5 +448,4 @@ def show_file(mets_file, fid):
             break
     return render_template(
         'detail.html',
-        original_file=target_original_file, mets_file=mets_file,
-        mix_compression=METSFile.MIX_COMPRESSION)
+        original_file=target_original_file, mets_file=mets_file)

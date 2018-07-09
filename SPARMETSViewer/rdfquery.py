@@ -72,6 +72,8 @@ def label_query(label, platform):
           %s
           { ?id rdfs:label ?label }
           UNION { ?id foaf:name ?label }
+          UNION { ?id doap
+          :name ?label }
           UNION { ?id dc:title ?label }
           %s
           FILTER (lang(?label) = '%s' or lang(?label) = '')
@@ -84,11 +86,17 @@ def label_query(label, platform):
     return response.content
 
 
-def from_sparql_results_to_json(json):
+def from_sparql_results_to_json(json, withCounts=False):
     values = []
+    result = {}
     # print("THL from_sparql_results_to_json", json.get("results").get("bindings"), file=sys.stderr)
     if json.get("results") is None or json.get("results").get("bindings") is None:
-        return jsonify(values)
+        if withCounts:
+            result['total'] = 0
+            result['rows'] = values
+            return jsonify(result)
+        else:
+            return jsonify(values)
     # print("THL from_sparql_results_to_json", file=sys.stderr)
     for binding in json.get("results").get("bindings"):
         dict = {}
@@ -96,4 +104,10 @@ def from_sparql_results_to_json(json):
             # print("THL mapping ", key, entry.get("value"), file=sys.stderr)
             dict[key] = entry.get("value")
         values.append(dict)
-    return jsonify(values)
+    # Format the result depending on whether we need total or not
+    if withCounts:
+        result['total'] = 100
+        result['rows'] = values
+        return jsonify(result)
+    else:
+        return jsonify(values)
