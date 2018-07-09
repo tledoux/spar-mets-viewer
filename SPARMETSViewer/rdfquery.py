@@ -72,8 +72,7 @@ def label_query(label, platform):
           %s
           { ?id rdfs:label ?label }
           UNION { ?id foaf:name ?label }
-          UNION { ?id doap
-          :name ?label }
+          UNION { ?id doap:name ?label }
           UNION { ?id dc:title ?label }
           %s
           FILTER (lang(?label) = '%s' or lang(?label) = '')
