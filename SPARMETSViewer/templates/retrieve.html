@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block stylesheet %}
     <link rel="stylesheet" href="/static/css/bootstrap-select.min.css">
-    <!-- Correct bootstrap-select bug -->
+    <!-- 
+      Correct bootstrap-select bug 
+      https://github.com/silviomoreto/bootstrap-select/issues/1135
+    -->
     <style type="text/css">
     .open > .dropdown-menu { display: block; }
     </style>
@@ -91,9 +94,9 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         data-show-columns="false"
         data-show-export="true"
         data-pagination="true"
-        data-pagination-size="50"
+        data-page-size="50"
         data-page-list="[50, 100, 500]"
-        data-pagination-loop="false"
+        data-pagination-loop="true"
         data-side-pagination="server"
         data-pagination-v-align="both"
         data-locale="{{ _('en') }}"
@@ -133,7 +136,7 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
               })
               columnsChanged = false
             }
-            $table.bootstrapTable('refresh');
+            $table.bootstrapTable('refresh', { pageNumber: 1 })
         });
         
         // Monitor modification in display columns
@@ -164,11 +167,15 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         params.columns = ["ark"].concat(columns)
       }
       console.log("queryParams end " + JSON.stringify(params))
+      $button.attr("disabled", "disabled")
+      $table.bootstrapTable('showLoading')
       return params
     }
     // Handle the response if need be (adding total...)
     function queryResponseHandler(res) {
       console.log("queryResponseHandler begin " + JSON.stringify(res))
+      $button.attr("disabled", null)
+      $table.bootstrapTable('hideLoading')
       return res;
     }
     

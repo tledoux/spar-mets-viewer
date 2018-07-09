@@ -85,7 +85,7 @@ def label_query(label, platform):
     return response.content
 
 
-def from_sparql_results_to_json(json, withCounts=False):
+def from_sparql_results_to_json(json, withCounts=False, count=100):
     values = []
     result = {}
     # print("THL from_sparql_results_to_json", json.get("results").get("bindings"), file=sys.stderr)
@@ -105,7 +105,7 @@ def from_sparql_results_to_json(json, withCounts=False):
         values.append(dict)
     # Format the result depending on whether we need total or not
     if withCounts:
-        result['total'] = 100
+        result['total'] = count
         result['rows'] = values
         return jsonify(result)
     else:

@@ -2,6 +2,7 @@
 """Definition of the routes for the application."""
 import os
 import sys
+import time
 
 from flask import request, render_template, Response
 from flask_babel import gettext
@@ -120,6 +121,7 @@ def custom_query_json():
     triples = """?p sparprovenance:hasEvent ?e.
         ?e a sparprovenance:ingestCompletion.
         ?e dc:date ?ingest_date. """
+    optional = ""
     withOrder = False
     withReception = False
     for col in columns:
@@ -127,31 +129,25 @@ def custom_query_json():
             head += "?ingest_date "
         elif col == "file_count":
             head += "?file_count "
-            triples += " ?p sparfixity:fileCount ?file_count } "
+            triples += " ?p sparfixity:fileCount ?file_count. "
         elif col == "size":
             head += "?size "
-            triples += " ?p sparfixity:size ?size } "
+            triples += " ?p sparfixity:size ?size. "
         elif col == "title":
             head += "?title "
-            triples += " OPTIONAL { ?p dc:title ?title } "
-        elif col == "title":
-            head += "?title "
-            triples += " OPTIONAL { ?p dc:title ?title } "
+            optional += " OPTIONAL { ?p dc:title ?title } "
         elif col == "creator":
             head += "(GROUP_CONCAT(DISTINCT ?creato; separator=', ') AS ?creator) "
-            triples += " OPTIONAL { ?p dc:creator ?creato } "
+            optional += " OPTIONAL { ?p dc:creator ?creato } "
         elif col == "call_no":
             head += "?call_no "
-            triples += " OPTIONAL { ?p sparreference:callNumber ?call_no } "
+            optional += " OPTIONAL { ?p sparreference:callNumber ?call_no } "
         elif col == "record_no":
             head += "?record_no "
-            triples += " OPTIONAL { ?p dc:relation ?record_no } "
+            optional += " OPTIONAL { ?p dc:relation ?record_no } "
         elif col == "contract_no":
             head += "?contract_no "
-            triples += " OPTIONAL { ?p dc:rights ?contract_no } "
-        elif col == "contract_no":
-            head += "?contract_no "
-            triples += " OPTIONAL { ?p dc:rights ?contract_no } "
+            optional += " OPTIONAL { ?p dc:rights ?contract_no } "
         elif col == "order_no":
             withOrder = True
             head += "?order_no "
@@ -168,16 +164,42 @@ def custom_query_json():
             withReception = True
             head += "?reception_date "
     if withOrder:
-        triples += """ OPTIONAL { ?p sparprovenance:hasEvent ?eOrder.
+        optional += """ OPTIONAL { ?p sparprovenance:hasEvent ?eOrder.
             ?eOrder a sparprovenance:orderPlacing.
             ?eOrder dc:date ?order_date.
             ?eOrder sparprovenance:hasIssuer ?order_issuer.
             ?eOrder dc:description ?order_no. }"""
     if withReception:
-        triples += """ OPTIONAL { ?p sparprovenance:hasEvent ?eReception.
+        optional += """ OPTIONAL { ?p sparprovenance:hasEvent ?eReception.
             ?eReception a sparprovenance:documentReception.
             ?eReception dc:date ?reception_date.
             ?eReception dc:description ?reception_no. }"""
+
+    queryCount = """SELECT (count(?ark) AS ?total)
+        WHERE {
+        ?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p.
+        GRAPH ?g {
+        ?p a sparstructure:group.
+        ?p sparcontext:isMemberOf <%s>.
+        %s
+        %s
+        } }""" % (channel, triples, filter)
+    if platform == "TEST":  # long queries on TEST
+        total = 2
+    else:
+        response = get(
+            endpoint,
+            headers={'Accept': 'application/sparql-results+json'},
+            params={'query': queryCount, 'format': 'application/sparql-results+json'})
+        if response.status_code != codes.ok:
+            resp = Response(
+                response.data,
+                status=response.status_code,
+                mimetype=response.content_type
+            )
+            return resp
+        totals = response.json()
+        total = int(totals.get("results").get("bindings")[0].get("total").get("value"))
 
     query = """SELECT
         %s
@@ -186,11 +208,13 @@ def custom_query_json():
         GRAPH ?g {
         ?p a sparstructure:group.
         ?p sparcontext:isMemberOf <%s>.
+        %s %s
         %s
-        %s
-        } } %s""" % (head, channel, triples, filter, limit)
+        } } %s""" % (head, channel, triples, optional, filter, limit)
 
     app.logger.debug("THL QUERY with %s", query)
+    if platform == "TEST":  # long queries on TEST
+        time.sleep(5)
     response = get(
         endpoint,
         headers={'Accept': 'application/sparql-results+json'},
@@ -201,7 +225,7 @@ def custom_query_json():
         return resp
     results = response.json()
     # app.logger.debug("THL JSON response %s", results)
-    return from_sparql_results_to_json(results, withCounts=True)
+    return from_sparql_results_to_json(results, withCounts=True, count=total)
 
 
 @app.route("/query", methods=['GET', 'POST'])
