@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """Definition of the routes for the application."""
 import os
-import sys
 import time
 
-from flask import request, render_template, Response
+from flask import jsonify, request, render_template, Response
 from flask_babel import gettext
-from requests import get, codes  # to make GET request
+from requests import get, codes
 from werkzeug.utils import secure_filename
 
 from SPARMETSViewer import app, babel, db
@@ -14,6 +13,7 @@ from config import LANGUAGES
 
 from .models import METS
 from .parsemets import METSFile
+from .referencedata import ReferenceData
 from .rdfquery import label_query, from_sparql_results_to_json
 
 
@@ -80,7 +80,19 @@ def label_access(label):
     platform = app.config['ACCESS_PLATFORM']
     if platform is None:
         return
-    return label_query(label, platform)
+    return jsonify(label_query(label, platform))
+
+
+@app.route("/reference/<kind>", methods=['GET'])
+def reference_data_access(kind):
+    """Make a SPARQL query to retrieve reference data"""
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+
+    ref_data = ReferenceData()
+    ref_data.set_platform(platform)
+    return jsonify(ref_data.get_data(kind))
 
 
 @app.route("/customquery", methods=['POST'])
@@ -98,12 +110,6 @@ def custom_query_json():
         resp = Response("No json parameters", status=codes.bad_request, mimetype="text/plain")
         return resp
     content = request.get_json()
-    for key in content:
-        app.logger.debug("Custom query %s", key)
-    # if query is None:
-    #    resp = Response("No query", status=codes.bad_request, mimetype="text/plain")
-    #    return resp
-    # app.logger.debug("THL QUERY with %s", query)
     platform = app.config['ACCESS_PLATFORM']
     if platform is None:
         return
@@ -225,7 +231,7 @@ def custom_query_json():
         return resp
     results = response.json()
     # app.logger.debug("THL JSON response %s", results)
-    return from_sparql_results_to_json(results, withCounts=True, count=total)
+    return jsonify(from_sparql_results_to_json(results, withCounts=True, count=total))
 
 
 @app.route("/query", methods=['GET', 'POST'])
@@ -258,7 +264,7 @@ def query_json():
         return resp
     results = response.json()
     # app.logger.debug("THL JSON response %s", results)
-    return from_sparql_results_to_json(results)
+    return jsonify(from_sparql_results_to_json(results))
 
 
 @app.route("/sparql", methods=['GET', 'POST'])

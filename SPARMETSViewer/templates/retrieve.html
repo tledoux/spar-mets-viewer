@@ -22,42 +22,8 @@
   <div class="form-control">
     <div class="form-group row">
       <label for="channel" class="control-label col-md-2">{{ _('Channel') }}</label>
-      <!--
-SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
-  ?c a sparcontext:channel.
-  ?c owl:sameAs ?uri.
-} ORDER BY ?uri LIMIT 100
-      -->
       <select id="channel" class="selectpicker">
         <option value="" selected="selected"><i>{{ _('Select a channel') }}</i></option>
-        <option value="ark:/12148/br2d2f5z">fil_addn_a</option>
-        <option value="ark:/12148/br2d2f66">fil_addn_b</option>
-        <option value="ark:/12148/br2d26qc">fil_aud_b</option>
-        <option value="ark:/12148/br2d2bzw">fil_aud_d</option>
-        <option value="ark:/12148/br2d28qs">fil_dl_auto_cac</option>
-        <option value="ark:/12148/br2d28r1">fil_dl_auto_cia</option>
-        <option value="ark:/12148/br2d28s8">fil_dl_auto_his</option>
-        <option value="ark:/12148/br2d28th">fil_dl_auto_htt</option>
-        <option value="ark:/12148/br2d28pj">fil_dl_auto_nas</option>
-        <option value="ark:/12148/br2d293n">fil_dl_nego_agf01</option>
-        <option value="ark:/12148/br2d2c88">fil_dl_nego_livnum_a</option>
-        <option value="ark:/12148/br2d2c9h">fil_dl_nego_livnum_b</option>
-        <option value="ark:/12148/br2d22g">fil_num_cons_a</option>
-        <option value="ark:/12148/br2d2bxn">fil_num_cons_b</option>
-        <option value="ark:/12148/br2d2csw">fil_num_cons_c</option>
-        <option value="ark:/12148/br2d2f10">fil_num_cons_d</option>
-        <option value="ark:/12148/br2d2f27">fil_num_cons_e</option>
-        <option value="ark:/12148/br2d2f8p">fil_num_cons_f</option>
-        <option value="ark:/12148/br2d2b1c">fil_prod_adm_a</option>
-        <option value="ark:/12148/br2d230p">fil_ref_agent</option>
-        <option value="ark:/12148/br2d231x">fil_ref_channel</option>
-        <option value="ark:/12148/br2d26rm">fil_ref_collection</option>
-        <option value="ark:/12148/br2d22z7">fil_ref_format</option>
-        <option value="ark:/12148/br2d2325">fil_ref_ontology</option>
-        <option value="ark:/12148/br2d2c2t">fil_ref_test</option>
-        <option value="ark:/12148/br2d290x">fil_ta_cnacgp01</option>
-        <option value="ark:/12148/br2d2cd7">fil_ta_mnpp01</option>
-        <option value="ark:/12148/br2d2dkn">fil_ta_mqb01</option>
       </select>
       <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
       <input type="text" name="period" id="period" class="col-md-4" placeholder="2018-06" pattern="(\d{4}(-\d{2})?(-\d{2})?)" title= "{{ _('Valid period is year (2018) or month (2018-06).') }}"/>
@@ -80,7 +46,6 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
   <hr />
   <div id="result">
   <div id="toolbar">
-  <!--<p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>-->
   </div>
   <table id="table"
         data-toolbar="#toolbar"
@@ -143,10 +108,30 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
         $displayColumns.on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
           columnsChanged = true
         });
+        
+        // Initialize the fields
+        initSelect()
         $("#period").val(getCurrentYearMonth())
         // Initialize the table
         initTable()
      });
+     
+    //
+    function initSelect() {
+      $.getJSON('/reference/channel', function(data) {
+        var channels = data;
+        if (channels === undefined || channels.length == 0) {
+          return
+        }
+        $.each(channels, function(i, item) {
+            $("#channel").append($('<option>', {
+              value:item.id,
+              text:item.label
+            }));
+        });
+      })
+    }
+    
     // Function to build the appropriate query
     function queryParams(params) {
       console.log("queryParams begin " + JSON.stringify(params))

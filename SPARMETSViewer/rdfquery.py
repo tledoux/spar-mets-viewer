@@ -3,7 +3,7 @@
 
 import sys
 from functools import lru_cache
-from flask import jsonify
+# from flask import jsonify
 from flask_babel import gettext
 from requests import get  # to make GET request
 
@@ -13,18 +13,34 @@ from .identifiers import abstract_ark, is_uuid
 
 
 def __fake_literal_result(value):
-    return jsonify(
-        {"head": {"link": [], "vars": ["label"]},
-         "results": {
+    return {
+        "head": {"link": [], "vars": ["label"]},
+        "results": {
             "distinct": "false", "ordered": "true",
             "bindings": [{"label": {"type": "literal",
-                                    "xml:lang": "fr", "value": value}}]}})
+                                    "xml:lang": "fr", "value": value}}]}
+    }
 
 
 def __fake_empty_result():
-    return jsonify(
-        {"head": {"link": [], "vars": ["label"]},
-         "results": {"distinct": "false", "ordered": "true", "bindings": []}})
+    return {
+        "head": {"link": [], "vars": ["label"]},
+        "results": {"distinct": "false", "ordered": "true", "bindings": []}
+    }
+
+
+def simple_query(query, platform):
+    """Make a SPARQL query to the appropriate platform"""
+    if platform == "TEST":
+        return __fake_empty_result()
+    # Make a SPARQL query to retrieve the label
+    endpoint = app.config['ACCESS_ENDPOINT']
+    # app.logger.debug("SPARQL query %s", query)
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    return response
 
 
 @lru_cache(maxsize=128)
@@ -49,7 +65,6 @@ def label_query(label, platform):
             return __fake_empty_result()
 
     # Make a SPARQL query to retrieve the label
-    endpoint = app.config['ACCESS_ENDPOINT']
     label = label.strip()
     ark = abstract_ark(label)
     if ark is not None:
@@ -78,11 +93,7 @@ def label_query(label, platform):
           FILTER (lang(?label) = '%s' or lang(?label) = '')
         } LIMIT 1""" % (same, value, gettext("en"))
     app.logger.debug("SPARQL query %s", query)
-    response = get(
-        endpoint,
-        headers={'Accept': 'application/sparql-results+json'},
-        params={'query': query, 'format': 'application/sparql-results+json'})
-    return response.content
+    return simple_query(query.content, platform)
 
 
 def from_sparql_results_to_json(json, withCounts=False, count=100):
@@ -93,9 +104,9 @@ def from_sparql_results_to_json(json, withCounts=False, count=100):
         if withCounts:
             result['total'] = 0
             result['rows'] = values
-            return jsonify(result)
+            return result
         else:
-            return jsonify(values)
+            return values
     # print("THL from_sparql_results_to_json", file=sys.stderr)
     for binding in json.get("results").get("bindings"):
         dict = {}
@@ -107,6 +118,6 @@ def from_sparql_results_to_json(json, withCounts=False, count=100):
     if withCounts:
         result['total'] = count
         result['rows'] = values
-        return jsonify(result)
+        return result
     else:
-        return jsonify(values)
+        return values
