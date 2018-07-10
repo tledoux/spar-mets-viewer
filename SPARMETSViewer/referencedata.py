@@ -8,7 +8,7 @@ class Singleton(object):
     def __new__(cls, *args, **kw):
         if not hasattr(cls, '_instance'):
             orig = super(Singleton, cls)
-            cls._instance = orig.__new__(cls, *args, **kw)
+            cls._instance = orig.__new__(cls)
         return cls._instance
 
 
@@ -62,15 +62,12 @@ class ReferenceData(Singleton):
          "title": "Fin du versement"},
     ]
 
-    def __init__(self):
-        self.platform = "TEST"
+    def __init__(self, platform):
+        self.platform = platform
         self.values = {}
 
     def __str__(self):
         return self.platform + " [" + len(self.values) + "]"
-
-    def set_platform(self, platform):
-        self.platform = platform
 
     def get_data(self, kind):
         if kind not in ReferenceData.KINDS:
@@ -93,7 +90,7 @@ class ReferenceData(Singleton):
 
         if kind == "channel":
             query = """
-                SELECT (STRAFTER(STR(?uri), "context/" AS ?label) ?id ?title ?desc WHERE {
+                SELECT (STRAFTER(STR(?uri), 'context/') AS ?label) ?id ?title ?desc WHERE {
                   ?id a sparcontext:channel.
                   ?id owl:sameAs ?uri.
                   ?id dc:title ?title.
@@ -106,7 +103,7 @@ class ReferenceData(Singleton):
                 } ORDER BY ?id LIMIT 100"""
         elif kind == "event":
             query = """
-                SELECT (STRAFTER(STR(?id), "provenance#" AS ?label) ?id ?title ?desc WHERE {
+                SELECT (STRAFTER(STR(?id), 'provenance#') AS ?label) ?id ?title ?desc WHERE {
                   ?id rdfs:subClassOf sparprovenance:event.
                   ?id rdfs:label ?title.
                   OPTIONAL { ?id rdfs:comment ?desc. }
@@ -114,4 +111,4 @@ class ReferenceData(Singleton):
                   FILTER (lang(?desc) = 'fr')
                 } ORDER BY ?id LIMIT 1000"""
         results = simple_query(query)
-        return from_sparql_results_to_json(results.json)
+        return from_sparql_results_to_json(results)

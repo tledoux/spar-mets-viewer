@@ -5,7 +5,7 @@ import sys
 from functools import lru_cache
 # from flask import jsonify
 from flask_babel import gettext
-from requests import get  # to make GET request
+from requests import get, codes
 
 from SPARMETSViewer import app
 
@@ -29,10 +29,8 @@ def __fake_empty_result():
     }
 
 
-def simple_query(query, platform):
+def simple_query(query):
     """Make a SPARQL query to the appropriate platform"""
-    if platform == "TEST":
-        return __fake_empty_result()
     # Make a SPARQL query to retrieve the label
     endpoint = app.config['ACCESS_ENDPOINT']
     # app.logger.debug("SPARQL query %s", query)
@@ -40,7 +38,10 @@ def simple_query(query, platform):
         endpoint,
         headers={'Accept': 'application/sparql-results+json'},
         params={'query': query, 'format': 'application/sparql-results+json'})
-    return response
+    if response.status_code != codes.ok:
+        app.logger.debug("Bad response for query %s", query)
+        raise ValueError(response.status_code)
+    return response.json()
 
 
 @lru_cache(maxsize=128)
@@ -93,7 +94,7 @@ def label_query(label, platform):
           FILTER (lang(?label) = '%s' or lang(?label) = '')
         } LIMIT 1""" % (same, value, gettext("en"))
     app.logger.debug("SPARQL query %s", query)
-    return simple_query(query.content, platform)
+    return simple_query(query)
 
 
 def from_sparql_results_to_json(json, withCounts=False, count=100):

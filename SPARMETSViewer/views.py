@@ -80,7 +80,8 @@ def label_access(label):
     platform = app.config['ACCESS_PLATFORM']
     if platform is None:
         return
-    return jsonify(label_query(label, platform))
+    results = label_query(label, platform)
+    return jsonify(results)
 
 
 @app.route("/reference/<kind>", methods=['GET'])
@@ -90,8 +91,7 @@ def reference_data_access(kind):
     if platform is None:
         return
 
-    ref_data = ReferenceData()
-    ref_data.set_platform(platform)
+    ref_data = ReferenceData(platform)
     return jsonify(ref_data.get_data(kind))
 
 
@@ -102,10 +102,6 @@ def custom_query_json():
     #    query = request.form.get("query")
     # else:
     #    query = request.args.get("query")
-    app.logger.debug(
-        "Custom query with content-type %s %s",
-        request.headers.get('Content-Type'),
-        request.is_json)
     if not request.is_json:
         resp = Response("No json parameters", status=codes.bad_request, mimetype="text/plain")
         return resp
@@ -190,7 +186,9 @@ def custom_query_json():
         %s
         %s
         } }""" % (channel, triples, filter)
-    if platform == "TEST":  # long queries on TEST
+    if 'total' in content:
+        total = int(content['total'])
+    elif platform == "TEST":  # long queries on TEST
         total = 2
     else:
         response = get(
@@ -206,6 +204,7 @@ def custom_query_json():
             return resp
         totals = response.json()
         total = int(totals.get("results").get("bindings")[0].get("total").get("value"))
+        app.logger.debug("Find %s results for channel %s", total, channel)
 
     query = """SELECT
         %s

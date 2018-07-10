@@ -77,6 +77,7 @@
 
   <script>
     var columnsChanged = false
+    var fullTotal = undefined
     var $table = $("#table")
     var $button = $("#btnSubmit")
     var $displayColumns = $("#displayColumns")
@@ -106,7 +107,15 @@
         
         // Monitor modification in display columns
         $displayColumns.on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+          fullTotal = undefined
           columnsChanged = true
+        });
+        // Monitor modification in period
+        $("#period").on("change", function() {
+            fullTotal = undefined
+        });
+        $("#channel").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+          fullTotal = undefined
         });
         
         // Initialize the fields
@@ -151,16 +160,21 @@
       if (columns) {
         params.columns = ["ark"].concat(columns)
       }
+      if (fullTotal) {
+        params.total = fullTotal
+      }
+
       console.log("queryParams end " + JSON.stringify(params))
       $button.attr("disabled", "disabled")
       $table.bootstrapTable('showLoading')
       return params
     }
-    // Handle the response if need be (adding total...)
+    // Handle the response from the server
     function queryResponseHandler(res) {
       console.log("queryResponseHandler begin " + JSON.stringify(res))
       $button.attr("disabled", null)
       $table.bootstrapTable('hideLoading')
+      fullTotal = res.total
       return res;
     }
     
