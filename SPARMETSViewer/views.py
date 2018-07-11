@@ -233,6 +233,45 @@ def custom_query_json():
     return jsonify(from_sparql_results_to_json(results, withCounts=True, count=total))
 
 
+@app.route("/graph", methods=['GET', 'POST'])
+def get_graph():
+    """Retrieve the full graph for a given ark"""
+    if request.method == 'POST':
+        ark = request.form.get("ark")
+    else:
+        ark = request.args.get("ark")
+    if ark is None:
+        resp = Response("No ark", status=codes.bad_request, mimetype="text/plain")
+        return resp
+    ark = app.config['ARK_PREFIX'] + ark.strip()
+    app.logger.debug("Get graph with %s", ark)
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+    endpoint = app.config['ACCESS_ENDPOINT']
+    if platform == 'TEST':
+        endpoint = app.config['GRAPH_TESTFILE']
+    query = """SELECT ?s ?p ?o WHERE {
+        <%s> sparcontext:hasLastVersion/sparcontext:hasLastRelease ?arkvr.
+        GRAPH ?g {
+          ?arkvr a sparstructure:group.
+          ?s ?p ?o.
+        } """ % ark
+    app.logger.debug("Get graph endpoint %s", endpoint)
+
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    app.logger.debug("Get graph response %s", response.status_code)
+    if response.status_code != codes.ok:
+        resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
+        return resp
+    results = response.json()
+    # app.logger.debug("THL JSON response %s", results)
+    return jsonify(results)
+
+
 @app.route("/query", methods=['GET', 'POST'])
 def query_json():
     """Make a SPARQL query and get back a simple json for table"""
@@ -306,9 +345,25 @@ def report():
 
 @app.route("/retrieve", methods=['GET', 'POST'])
 def retrieve():
-    """Access to the search choice"""
+    """Access to the retrieve form"""
     return render_template(
         'retrieve.html',
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=app.config['ACCESS_PLATFORM'])
+
+
+@app.route("/explore", methods=['GET', 'POST'])
+def explore():
+    """Access to explore the graph"""
+    ark = None
+    if request.method == 'POST':
+        ark = request.form.get("ark")
+    elif request.method == 'GET':
+        ark = request.args.get("ark")
+
+    return render_template(
+        'explore.html',
+        ark=ark,
         ark_prefix=app.config['ARK_PREFIX'],
         access_platform=app.config['ACCESS_PLATFORM'])
 

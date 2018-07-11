@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block stylesheet %}
+    <link rel="stylesheet" href="/static/css/vis-network.min.css">
+    <style type="text/css">
+    #network {
+      // width: 1000px;
+      height: 400px;
+      border: 1px solid lightgray;
+    }
+    .result.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1050;
+      width: 100%!important;
+      background: #FFF;
+    }
+    </style>
+{% endblock %}
+{% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/vis.min.js"></script>
+{%endblock%}
+{% block content %}
+  <div class="well">
+  <p>{{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}</p>
+  </div>
+ 
+  <div class="form-control">
+    <div class="form-group">
+      <label for="ark" class="control-label">{{ _('Ark Identifier:') }}</label>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="ark-addon">{{ ark_prefix }}</span>
+        </div>
+        <input type="text" class="form-control" name="ark" id="ark" aria-describedby="ark-addon" placeholder="bpt6k206840w" pattern="b[0-9bcdfghijkmnpqrstvwxz]+" title= "{{ _('Valid ARK is in the form bxxxx.') }}" value="{{ ark or "" }}" />
+        <div class="input-group-append">
+          <button class="btn btn-success" id="btnSubmit"><span class="fa fa-search"></span> {{ _('Submit') }}</button>
+        </div>
+      </div>
+    </div>
+    
+    <!--<div class="form-group">
+      <button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button>
+    </div>-->
+    
+  </div>
+  <hr />
+  <div id="result" class="graph">
+  <div id="toolbar">
+  <button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button>
+  </div>
+  <div id="network"></div>
+  </div>
+<!-- color: "#c47c48"  set, group
+color: "#ce3c41" metadata
+color: "#bf3fc8" object
+color:"#8cc43d" file
+-->
+  <script type="text/javascript">
+    // create an array with nodes
+    var nodes = new vis.DataSet([
+      {id: 1, label: 'ark:/12148/bpt6k206840w.version0.release0\ndc:date "1914"', color: '#c47c48'},
+      {id: 2, label: 'sparstructure:group'},
+      {id: 3, label: 'ark:/12148/bpt6k206840w/f1.version0.release0', color: '#bf3fc8'},
+      {id: 4, label: 'Impressions de Sicile / Princesse Marie Wolkonsky', shape:'text', color: '#ce3c41'},
+      {id: 5, label: 'event', title:'info:bnf/spar/provenance/39f1aa70-a18c-11e4-baa9-0050568b3cc5', color: "#ce3c41"}
+    ]);
+
+    // create an array with edges
+    var edges = new vis.DataSet([
+      {from: 1, to: 2, arrows: 'to', label: 'a'},
+      {from: 1, to: 3, arrows: 'to', label: 'oai-ore:aggregates'},
+      {from: 1, to: 4, arrows: 'to', label: 'dc:title'},
+      {from: 1, to: 5, arrows: 'to', label: 'sparprovenance:hasEvent'},
+    ]);
+
+    // create a network
+    var container = document.getElementById('network');
+    var data = {
+      nodes: nodes,
+      edges: edges
+    };
+    var options = {
+      groups: { 
+        textGroup: { color:'#ce3c41' },
+        structureGroup: { color:'#c47c48'}, 
+      },
+      layout: {
+        hierarchical: {
+          enabled:true,
+          levelSeparation: 400,
+          nodeSpacing: 400,
+          direction: 'UD',        // UD, DU, LR, RL
+          sortMethod: 'directed'   // hubsize, directed
+        }
+      },
+      physics: {
+        enabled: false,
+      },
+      nodes: { shape:'box'}
+    };
+    var network = new vis.Network(container, data, options);
+  </script>
+  <script>
+    function translateNs(original) {
+      if (original == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+        return "a"
+      if (original.startsWith("info:bnf/spar/structure#"))
+        return original.replace("info:bnf/spar/structure#", "sparstructure:")
+      if (original.startsWith("info:bnf/spar/context#"))
+        return original.replace("info:bnf/spar/context#", "sparcontext:")
+      if (original.startsWith("info:bnf/spar/provenance#"))
+        return original.replace("info:bnf/spar/provenance#", "sparprovenance:")
+      if (original.startsWith("info:bnf/spar/representation#"))
+        return original.replace("info:bnf/spar/representation#", "sparrepresentation:")
+      if (original.startsWith("info:bnf/spar/reference#"))
+        return original.replace("info:bnf/spar/reference#", "sparreference:")
+      if (original.startsWith("info:bnf/spar/fixity#"))
+        return original.replace("info:bnf/spar/fixity#", "sparfixity:")
+      if (original.startsWith("info:bnf/spar/textmd#"))
+        return original.replace("info:bnf/spar/textmd#", "textmd:")
+      if (original.startsWith("http://www.openarchives.org/ore/terms/"))
+        return original.replace("http://www.openarchives.org/ore/terms/", "oai-ore:")
+      if (original.startsWith("http://purl.org/dc/elements/1.1/"))
+        return original.replace("http://purl.org/dc/elements/1.1/", "dc:")
+      if (original.startsWith("http://xmlns.com/foaf/0.1/"))
+        return original.replace("http://xmlns.com/foaf/0.1/", "foaf:")
+      if (original.startsWith("info:bnf/spar/provenance/"))
+        return original.replace("info:bnf/spar/provenance/", "event:")
+      // Simplify ark URIs
+      if (original.startsWith("ark:/")) {
+        var reV = /\.version/;
+        var reR = /\.release/;
+        var reNum = /\/([a-z]+)\d+([\.\/])/;
+        return original.replace(reV, ".V").replace(reR, '.R').replace(reNum, '/$1XXX$2')
+      }
+      return original
+    }
+  </script>
+  <script>
+    var $button = $("#btnSubmit")
+    var $ark = $("#ark")
+    
+    // onReady function
+    $(function () {
+      $("#btnToggle").click(function() {
+        wHeight = $( window ).height()
+        $('.graph').toggleClass('fullscreen')
+        if ($('.graph').hasClass('fullscreen')) {
+          $("#network").height(wHeight - 50)
+        } else {
+          $("#network").height(400)
+        }
+        console.log("Hauteur", $("#network").height(), "pour", $( window ).height())
+      });
+      
+      $button.click(function () {
+        // Download the graph corresponding to the ark
+        ark = $ark.val()
+        //alert(ark)
+        url = '/graph?ark=' + ark
+        $.getJSON(url, function(data) {
+          var nodes = {}
+          var edges= {}
+          var edgesGraph = []
+          var nodesGraph = []
+          var nbNodes = 0
+          var triples = data.results.bindings
+          console.log("triples begin " + JSON.stringify(triples))
+          triples.forEach( function(triple) {
+            if (nbNodes > 300) return;
+            if (nbNodes % 10 == 0) console.log(nbNodes)
+            var s = triple.s.value
+            var p = triple.p.value
+            var o = triple.o.value
+
+            if (triple.s.type == 'uri') {
+              s = translateNs(s)
+            }
+            var node_s, node_o
+            if (s in nodes) {
+              node_s = nodes[s]
+            } else {
+              nbNodes++
+              node_s = { id:nbNodes, label:s, font: { multi: true } }
+              nodesGraph.push(node_s)
+              nodes[s] = node_s
+            }
+            p = translateNs(p)
+            if (p == "a") {
+              if (node_s.title == undefined) {
+                o = translateNs(o)
+                if (o.startsWith("sparstructure")) {
+                  node_s.group = "structureGroup"
+                  node_s.mass = 3
+                }
+                node_s.title = translateNs(o)
+              }
+              return
+            }
+            if (triple.o.type == 'uri' || triple.o.type == 'bnode') {
+              o = translateNs(o)
+              if (o in nodes) {
+                node_o = nodes[o]
+              } else {
+                nbNodes++
+                node_o = { id:nbNodes, label:o, font: { multi: true } }
+                nodesGraph.push(node_o)
+                nodes[o] = node_o
+              }
+              // target is uri
+              edgeHash = "" + node_s.id + "-" + p + "->" + node_o.id
+              if (edgeHash in edges) {
+                width = edgeHash.width
+                if (width == undefined)
+                  width = 2
+                else if (width < 5)
+                  width++
+                else 
+                  width = 5
+                edgeHash.width = 5
+              } else {
+                edge = {from: node_s.id, to: node_o.id, arrows: 'to', label: p}
+                edges[edgeHash] = edge
+                edgesGraph.push(edge)
+              }
+            } else {
+              if (p != "sparfixity:size") {
+                label = node_s.label
+                if (label == undefined) {
+                  node_s.label = p + "=" + o
+                } else {
+                  node_s.label = label + "\n<i>" + p + "=" + o + "</i>"
+                }
+              }
+              /*
+              title = node_s.title
+              if (title == undefined) {
+                node_s.title = p + "=" + o
+              } else {
+                node_s.title = title + "\n" + p + "=" + o
+              }
+              */
+              // target is literal (only one arrow)
+              /*
+              edgeHash = "" + node_s.id + "-" + p + "-> literal"
+              if (edgeHash in edges) {
+                width = edgeHash.width
+                if (width == undefined)
+                  width = 2
+                else if (width < 5)
+                  width++
+                else 
+                  width = 5
+                edgeHash.width = 5
+              } else {
+                if (o in nodes) {
+                  node_o = nodes[o]
+                } else {
+                  nbNodes++
+                  node_o = { id:nbNodes, label:o, group:"textGroup"}
+                  nodesGraph.push(node_o)
+                  nodes[o] = node_o
+                }
+                edge = {from: node_s.id, to: node_o.id, arrows: 'to', label: p}
+                edges[edgeHash] = edge
+                edgesGraph.push(edge)
+              }
+              */
+            }
+          });
+          /*console.log(nodesGraph);
+          console.log(edgesGraph);*/
+          console.log("Found ", nbNodes, " nodes");
+          console.log("Found ", edgesGraph.length, " edges");
+          var data = { nodes:nodesGraph, edges:edgesGraph }
+          network.stopSimulation()
+          network.setData(data)
+          network.startSimulation()
+        });
+      });
+    });
+
+</script>
+{% endblock %}
+
+

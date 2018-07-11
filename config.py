@@ -13,6 +13,7 @@ ACCESS_PLATFORM = 'TEST'
 ACCESS_URL = 'http://localhost:5000/static/samples/bpt6k206840w.manifest.xml'
 ACCESS_ENDPOINT = 'http://localhost:5000/static/samples/sparqlResponse2.json'
 REPORT_ENDPOINT = 'http://localhost:5000/static/samples/sparqlResponseReport.json'
+GRAPH_TESTFILE = 'http://localhost:5000/static/samples/bpt6k206840w.rdf.json'
 SPARQL_URL = 'http://localhost:5000/static/samples/bpt6k206840w.rdf.json'
 ARK_PREFIX = 'ark:/12148/'
 ALLOWED_EXTENSIONS = set(['xml'])
