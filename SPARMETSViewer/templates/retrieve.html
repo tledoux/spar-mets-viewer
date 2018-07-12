@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block stylesheet %}
     <link rel="stylesheet" href="/static/css/bootstrap-select.min.css">
-    <!-- 
-      Correct bootstrap-select bug 
+    <!--
+      Correct bootstrap-select bug
       https://github.com/silviomoreto/bootstrap-select/issues/1135
     -->
     <style type="text/css">
@@ -18,12 +18,15 @@
   <div class="well">
   <p>{{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}</p>
   </div>
- 
+
   <div class="form-control">
     <div class="form-group row">
       <label for="channel" class="control-label col-md-2">{{ _('Channel') }}</label>
       <select id="channel" class="selectpicker">
         <option value="" selected="selected"><i>{{ _('Select a channel') }}</i></option>
+        {% for channel in channels %}
+        <option value="{{ channel.id }}">{{ channel.label }}</option>
+        {% endfor %}
       </select>
       <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
       <input type="text" name="period" id="period" class="col-md-4" placeholder="2018-06" pattern="(\d{4}(-\d{2})?(-\d{2})?)" title= "{{ _('Valid period is year (2018) or month (2018-06).') }}"/>
@@ -82,7 +85,7 @@
     var $button = $("#btnSubmit")
     var $displayColumns = $("#displayColumns")
     var $selectChannel = $("#channel")
-    
+
     function getCurrentYearMonth() {
       function pad(num) {
         if (num < 10) { return '0' + num; } else { return num; }
@@ -90,7 +93,7 @@
       var d = new Date();
       return d.getFullYear() + '-' + pad(d.getMonth() + 1);
     }
-    
+
     // onReady function
     $(function () {
         $button.click(function () {
@@ -104,7 +107,7 @@
             }
             $table.bootstrapTable('refresh', { pageNumber: 1 })
         });
-        
+
         // Monitor modification in display columns
         $displayColumns.on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
           fullTotal = undefined
@@ -117,30 +120,13 @@
         $("#channel").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
           fullTotal = undefined
         });
-        
+
         // Initialize the fields
-        initSelect()
         $("#period").val(getCurrentYearMonth())
         // Initialize the table
         initTable()
      });
-     
-    //
-    function initSelect() {
-      $.getJSON('/reference/channel', function(data) {
-        var channels = data;
-        if (channels === undefined || channels.length == 0) {
-          return
-        }
-        $.each(channels, function(i, item) {
-            $("#channel").append($('<option>', {
-              value:item.id,
-              text:item.label
-            }));
-        });
-      })
-    }
-    
+
     // Function to build the appropriate query
     function queryParams(params) {
       console.log("queryParams begin " + JSON.stringify(params))
@@ -151,7 +137,7 @@
         // $("#channel").addClass('btn-danger')
         return false
       }
-      
+
       var period = $("#period").val()
       if (period) params.filter.period = period
       // Get the columns
@@ -177,7 +163,7 @@
       fullTotal = res.total
       return res;
     }
-    
+
     function addDetail(value, row, index, field) {
       return '<a href="/upload?ark=' + row['ark'] + '"><button class="btn btn-primary"><span class="fa fa-arrow-circle-down"></span> {{ _("Upload") }}</span></button></a>'
     }
@@ -208,7 +194,7 @@
         valign: 'middle',
         'tableexport-display': 'none',
         sortable: false,
-        align: 'right', 
+        align: 'right',
         formatter: addDetail
       })
       */

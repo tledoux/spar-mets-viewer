@@ -1,50 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
+  <div class="alert alert-danger" id="alertMsg">
+    <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
+  </div>
   <div class="well">
   <p>{{ _('Fill in the fields to generate a report on the platform %(platform)s.', platform=access_platform) }}</p>
   </div>
  
   <div class="form-control">
-    <div class="form-group">
+    <div class="form-group row>
       <label for="channel" class="control-label col-md-2">{{ _('Channel') }}</label>
-      <!--
-SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
-  ?c a sparcontext:channel.
-  ?c owl:sameAs ?uri.
-} ORDER BY ?uri LIMIT 100
-      -->
       <select id="channel" class="control-label col-md-4">
-        <option value="ark:/12148/br2d2f5z">fil_addn_a</option>
-        <option value="ark:/12148/br2d2f66">fil_addn_b</option>
-        <option value="ark:/12148/br2d26qc">fil_aud_b</option>
-        <option value="ark:/12148/br2d2bzw">fil_aud_d</option>
-        <option value="ark:/12148/br2d28qs">fil_dl_auto_cac</option>
-        <option value="ark:/12148/br2d28r1">fil_dl_auto_cia</option>
-        <option value="ark:/12148/br2d28s8">fil_dl_auto_his</option>
-        <option value="ark:/12148/br2d28th">fil_dl_auto_htt</option>
-        <option value="ark:/12148/br2d28pj">fil_dl_auto_nas</option>
-        <option value="ark:/12148/br2d293n">fil_dl_nego_agf01</option>
-        <option value="ark:/12148/br2d2c88">fil_dl_nego_livnum_a</option>
-        <option value="ark:/12148/br2d2c9h">fil_dl_nego_livnum_b</option>
-        <option value="ark:/12148/br2d22g" selected="selected">fil_num_cons_a</option>
-        <option value="ark:/12148/br2d2bxn">fil_num_cons_b</option>
-        <option value="ark:/12148/br2d2csw">fil_num_cons_c</option>
-        <option value="ark:/12148/br2d2f10">fil_num_cons_d</option>
-        <option value="ark:/12148/br2d2f27">fil_num_cons_e</option>
-        <option value="ark:/12148/br2d2f8p">fil_num_cons_f</option>
-        <option value="ark:/12148/br2d2b1c">fil_prod_adm_a</option>
-        <option value="ark:/12148/br2d230p">fil_ref_agent</option>
-        <option value="ark:/12148/br2d231x">fil_ref_channel</option>
-        <option value="ark:/12148/br2d26rm">fil_ref_collection</option>
-        <option value="ark:/12148/br2d22z7">fil_ref_format</option>
-        <option value="ark:/12148/br2d2325">fil_ref_ontology</option>
-        <option value="ark:/12148/br2d2c2t">fil_ref_test</option>
-        <option value="ark:/12148/br2d290x">fil_ta_cnacgp01</option>
-        <option value="ark:/12148/br2d2cd7">fil_ta_mnpp01</option>
-        <option value="ark:/12148/br2d2dkn">fil_ta_mqb01</option>
+        <option value="" selected="selected"><i>{{ _('Select a channel') }}</i></option>
+        {% for channel in channels %}
+        <option value="{{ channel.id }}">{{ channel.label }}</option>
+        {% endfor %}
       </select>
-    </div>
-    <div class="form-group">
       <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
       <input type="text" name="period" id="period" class="col-md-4" placeholder="2018-06" pattern="(\d{4}(-\d{2})?)" title= "{{ _('Valid period is year (2018) or month (2018-06).') }}"/>
     </div>
@@ -137,15 +108,26 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
                 ],
         })
     };
-
+    function showAlert() {
+        $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
+          $("#alertMsg").slideUp(500);
+        });
+    }
     function exec() {
-      $button.attr("disabled", "disabled")
-      $table.bootstrapTable('showLoading')
-      
       var endpoint = "/query"
       // Retrieve the fields
       var channel = $("#channel").val()
+      if (channel == "") {
+        // Display an error
+        $("#msgerr").text("{{ _('Select a channel') }}")
+        showAlert();
+        return
+      }
       var period = $("#period").val()
+      // Disable the controls
+      $button.attr("disabled", "disabled")
+      $table.bootstrapTable('showLoading')
+      
       // Build the SPARQL
       var sparql = "SELECT " +
         " (STRAFTER(STR(?uri), 'context/') AS ?channel) " +
@@ -180,6 +162,8 @@ SELECT ?c (STRAFTER(STR(?uri), "context/") AS ?alias) WHERE {
     // 
     
     $(function () {
+        activeNavItem('report');
+        $("#alertMsg").hide();
         initTable();
     });
   </script>

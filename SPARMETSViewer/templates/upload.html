@@ -22,7 +22,7 @@
       <input type="text" class="form-control" id="nickname" name="nickname"/>
     </div>
     <button type="submit" id="btnSubmit" class="btn btn-primary">{{ _('Submit') }}</button>
-    <button type="submit" id="btnExplore" class="btn btn-primary">{{ _('Explore') }}</button>
+    <!-- <button type="submit" id="btnExplore" class="btn btn-primary">{{ _('Explore') }}</button> -->
   </form>
   <hr />
   {% endif %}
@@ -45,6 +45,7 @@
     
     // onReady function
     $(function () {
+        activeNavItem('upload');
       $("#btnExplore").click(function(e) {
         $('#form1').prop('action', '/explore');
       });

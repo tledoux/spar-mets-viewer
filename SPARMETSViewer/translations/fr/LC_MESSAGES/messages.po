@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-07-12 01:07+0200\n"
+"POT-Creation-Date: 2018-07-12 15:01+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:95
+#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:66
 msgid "bytes"
 msgstr "octets"
 
-#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:95
+#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:66
 msgid "KB"
 msgstr "Ko"
 
-#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:95
+#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:66
 msgid "MB"
 msgstr "Mo"
 
-#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:95
+#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:66
 msgid "GB"
 msgstr "Go"
 
-#: SPARMETSViewer/identifiers.py:14 SPARMETSViewer/templates/report.html:95
+#: SPARMETSViewer/identifiers.py:14 SPARMETSViewer/templates/report.html:66
 msgid "TB"
 msgstr "To"
 
@@ -54,144 +54,146 @@ msgstr "Zo"
 msgid "YB"
 msgstr "Yo"
 
-#: SPARMETSViewer/parsemets.py:42 SPARMETSViewer/templates/search.html:116
+#: SPARMETSViewer/parsemets.py:43 SPARMETSViewer/templates/reference.html:141
+#: SPARMETSViewer/templates/search.html:112
 msgid "title"
 msgstr "titre"
 
-#: SPARMETSViewer/parsemets.py:42
+#: SPARMETSViewer/parsemets.py:43
 msgid "subject"
 msgstr "sujet"
 
-#: SPARMETSViewer/parsemets.py:42
+#: SPARMETSViewer/parsemets.py:43 SPARMETSViewer/templates/reference.html:146
 msgid "description"
 msgstr "description"
 
-#: SPARMETSViewer/parsemets.py:42
+#: SPARMETSViewer/parsemets.py:43
 msgid "source"
 msgstr "source"
 
-#: SPARMETSViewer/parsemets.py:43
+#: SPARMETSViewer/parsemets.py:44
 msgid "language"
 msgstr "langue"
 
-#: SPARMETSViewer/parsemets.py:43
+#: SPARMETSViewer/parsemets.py:44
 msgid "relation"
 msgstr "relation"
 
-#: SPARMETSViewer/parsemets.py:44
+#: SPARMETSViewer/parsemets.py:45
 msgid "coverage"
 msgstr "couverture"
 
-#: SPARMETSViewer/parsemets.py:44
+#: SPARMETSViewer/parsemets.py:45
 msgid "creator"
 msgstr "auteur"
 
-#: SPARMETSViewer/parsemets.py:44
+#: SPARMETSViewer/parsemets.py:45
 msgid "contributor"
 msgstr "contributeur"
 
-#: SPARMETSViewer/parsemets.py:44
+#: SPARMETSViewer/parsemets.py:45
 msgid "publisher"
 msgstr "éditeur"
 
-#: SPARMETSViewer/parsemets.py:45
+#: SPARMETSViewer/parsemets.py:46
 msgid "rights"
 msgstr "droits"
 
-#: SPARMETSViewer/parsemets.py:45
+#: SPARMETSViewer/parsemets.py:46
 msgid "date"
 msgstr "date"
 
-#: SPARMETSViewer/parsemets.py:45
+#: SPARMETSViewer/parsemets.py:46
 msgid "type"
 msgstr "type"
 
-#: SPARMETSViewer/parsemets.py:46
+#: SPARMETSViewer/parsemets.py:47
 msgid "format"
 msgstr "format"
 
-#: SPARMETSViewer/parsemets.py:46 SPARMETSViewer/templates/search.html:112
+#: SPARMETSViewer/parsemets.py:47 SPARMETSViewer/templates/search.html:108
 msgid "identifier"
 msgstr "identifiant"
 
-#: SPARMETSViewer/parsemets.py:47
+#: SPARMETSViewer/parsemets.py:48
 msgid "audience"
 msgstr "audience"
 
-#: SPARMETSViewer/parsemets.py:47
+#: SPARMETSViewer/parsemets.py:48
 msgid "provenance"
 msgstr "provenance"
 
-#: SPARMETSViewer/parsemets.py:48
+#: SPARMETSViewer/parsemets.py:49
 msgid "Ark Identifier"
 msgstr "Identifiant ARK"
 
-#: SPARMETSViewer/parsemets.py:48
+#: SPARMETSViewer/parsemets.py:49
 msgid "Production Identifier"
 msgstr "Identifiant de production"
 
-#: SPARMETSViewer/parsemets.py:49
+#: SPARMETSViewer/parsemets.py:50
 msgid "Version Identifier"
 msgstr "Identifiant de version"
 
-#: SPARMETSViewer/parsemets.py:49
+#: SPARMETSViewer/parsemets.py:50
 msgid "Channel Identifier"
 msgstr "Identifiant de chaîne"
 
-#: SPARMETSViewer/parsemets.py:53
+#: SPARMETSViewer/parsemets.py:54
 msgid "structMap"
 msgstr "carte de structure"
 
-#: SPARMETSViewer/parsemets.py:53
+#: SPARMETSViewer/parsemets.py:54
 msgid "set"
 msgstr "ensemble"
 
-#: SPARMETSViewer/parsemets.py:53
+#: SPARMETSViewer/parsemets.py:54
 msgid "group"
 msgstr "groupe"
 
-#: SPARMETSViewer/parsemets.py:53
+#: SPARMETSViewer/parsemets.py:54
 msgid "object"
 msgstr "objet"
 
-#: SPARMETSViewer/parsemets.py:54
+#: SPARMETSViewer/parsemets.py:55
 msgid "file"
 msgstr "fichier"
 
 #: SPARMETSViewer/rdfquery.py:95 SPARMETSViewer/templates/aip.html:115
 #: SPARMETSViewer/templates/index.html:24
-#: SPARMETSViewer/templates/report.html:73
-#: SPARMETSViewer/templates/retrieve.html:67
-#: SPARMETSViewer/templates/search.html:80
+#: SPARMETSViewer/templates/reference.html:59
+#: SPARMETSViewer/templates/report.html:44
+#: SPARMETSViewer/templates/retrieve.html:70
+#: SPARMETSViewer/templates/search.html:68
 msgid "en"
 msgstr "fr"
 
-#: SPARMETSViewer/views.py:379
+#: SPARMETSViewer/views.py:415
 msgid "No file part"
 msgstr "Pas de fichier"
 
-#: SPARMETSViewer/views.py:389
+#: SPARMETSViewer/views.py:425
 msgid "No selected file"
 msgstr "Pas de fichier séléctionné"
 
-#: SPARMETSViewer/views.py:407 SPARMETSViewer/views.py:473
+#: SPARMETSViewer/views.py:443 SPARMETSViewer/views.py:509
 msgid "METS already exists"
 msgstr "Le fichier METS existe déjà"
 
-#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:415
-#: SPARMETSViewer/views.py:481
+#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:451
+#: SPARMETSViewer/views.py:517
 msgid "Success! METS file uploaded!"
 msgstr "Succès ! Fichier METS téléchargé !"
 
-#: SPARMETSViewer/views.py:418
+#: SPARMETSViewer/views.py:454
 msgid "Not allowed selected file"
 msgstr "Fichier sélectionné non autorisé"
 
-#: SPARMETSViewer/views.py:435
+#: SPARMETSViewer/views.py:471
 msgid "No ARK part"
 msgstr "Pas d'ARK fourni"
 
-#: SPARMETSViewer/views.py:457
+#: SPARMETSViewer/views.py:493
 msgid "METS not found"
 msgstr "METS non trouvé"
 
@@ -235,8 +237,8 @@ msgid "Structure information"
 msgstr "Information de structure"
 
 #: SPARMETSViewer/templates/aip.html:102 SPARMETSViewer/templates/index.html:11
-#: SPARMETSViewer/templates/report.html:56
-#: SPARMETSViewer/templates/search.html:64
+#: SPARMETSViewer/templates/report.html:27
+#: SPARMETSViewer/templates/search.html:52
 msgid "Click on any column header to sort the table by that value."
 msgstr "Cliquer sur les entêtes de colonne pour trier la table."
 
@@ -301,14 +303,31 @@ msgstr "Evénement :"
 msgid "Event datetime:"
 msgstr "Date :"
 
-#: SPARMETSViewer/templates/base.html:40
-#: SPARMETSViewer/templates/retrieve.html:182
-#: SPARMETSViewer/templates/search.html:98
+#: SPARMETSViewer/templates/base.html:57
+#: SPARMETSViewer/templates/retrieve.html:168
+#: SPARMETSViewer/templates/search.html:94
 #: SPARMETSViewer/templates/search_old.html:128
 msgid "Upload"
 msgstr "Téléchargement"
 
-#: SPARMETSViewer/templates/base.html:49
+#: SPARMETSViewer/templates/base.html:60
+msgid "Exploration"
+msgstr "Exploration"
+
+#: SPARMETSViewer/templates/base.html:63
+msgid "Report"
+msgstr "Bilan"
+
+#: SPARMETSViewer/templates/base.html:66
+#: SPARMETSViewer/templates/reference.html:27
+msgid "Reference"
+msgstr "Référentiel"
+
+#: SPARMETSViewer/templates/base.html:77
+#: SPARMETSViewer/templates/explore.html:25
+#: SPARMETSViewer/templates/reference.html:19
+#: SPARMETSViewer/templates/report.html:4
+#: SPARMETSViewer/templates/search.html:19
 msgid "Error:"
 msgstr "Erreur :"
 
@@ -489,7 +508,7 @@ msgstr "Agent PREMIS"
 msgid "PREMIS Object"
 msgstr "Objet PREMIS"
 
-#: SPARMETSViewer/templates/explore.html:25
+#: SPARMETSViewer/templates/explore.html:28
 #: SPARMETSViewer/templates/retrieve.html:19
 #, python-format
 msgid "Fill in the fields to retrieve information on the platform %(platform)s."
@@ -497,25 +516,31 @@ msgstr ""
 "Renseigner les champs pour récupérer l'information sur la plateforme "
 "%(platform)s."
 
-#: SPARMETSViewer/templates/explore.html:30
+#: SPARMETSViewer/templates/explore.html:33
 #: SPARMETSViewer/templates/upload.html:9
 msgid "Ark Identifier:"
 msgstr "Identifiant ARK :"
 
-#: SPARMETSViewer/templates/explore.html:35
+#: SPARMETSViewer/templates/explore.html:38
+#: SPARMETSViewer/templates/explore.html:170
 #: SPARMETSViewer/templates/upload.html:14
 msgid "Valid ARK is in the form bxxxx."
 msgstr "Un ARK valide est de la forme bxxxx."
 
-#: SPARMETSViewer/templates/explore.html:37
-#: SPARMETSViewer/templates/report.html:51
-#: SPARMETSViewer/templates/retrieve.html:44
-#: SPARMETSViewer/templates/search.html:59
+#: SPARMETSViewer/templates/explore.html:40
+#: SPARMETSViewer/templates/reference.html:35
+#: SPARMETSViewer/templates/report.html:22
+#: SPARMETSViewer/templates/retrieve.html:47
+#: SPARMETSViewer/templates/search.html:47
 #: SPARMETSViewer/templates/search_old.html:67
 #: SPARMETSViewer/templates/upload.html:24
 #: SPARMETSViewer/templates/upload.html:41
 msgid "Submit"
 msgstr "Soumettre"
+
+#: SPARMETSViewer/templates/explore.html:176
+msgid "Loading..."
+msgstr "En cours de chargement..."
 
 #: SPARMETSViewer/templates/index.html:4
 msgid "A web application for human-friendly exploration of SPAR METS files"
@@ -548,95 +573,133 @@ msgstr "Actions"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: SPARMETSViewer/templates/report.html:4
+#: SPARMETSViewer/templates/reference.html:22
+#, python-format
+msgid ""
+"Select a reference to get back the information from the platform "
+"%(platform)s."
+msgstr ""
+"Choisir un référentiel pour obtenir l'information depuis la plateforme "
+"%(platform)s."
+
+#: SPARMETSViewer/templates/reference.html:29
+#: SPARMETSViewer/templates/reference.html:107
+msgid "Select a reference"
+msgstr "Choisir un référentiel"
+
+#: SPARMETSViewer/templates/reference.html:30
+msgid "Channels"
+msgstr "Chaînes"
+
+#: SPARMETSViewer/templates/reference.html:31
+msgid "Uses"
+msgstr "USE"
+
+#: SPARMETSViewer/templates/reference.html:32
+msgid "Events"
+msgstr "Evénements"
+
+#: SPARMETSViewer/templates/reference.html:131
+msgid "label"
+msgstr "alias"
+
+#: SPARMETSViewer/templates/reference.html:136
+msgid "id"
+msgstr "id"
+
+#: SPARMETSViewer/templates/report.html:7
 #, python-format
 msgid "Fill in the fields to generate a report on the platform %(platform)s."
 msgstr ""
 "Renseigner les champs pour générer un bilan sur la plateforme "
 "%(platform)s."
 
-#: SPARMETSViewer/templates/report.html:9
+#: SPARMETSViewer/templates/report.html:12
 #: SPARMETSViewer/templates/retrieve.html:24
-#: SPARMETSViewer/templates/search.html:9
+#: SPARMETSViewer/templates/search.html:27
 #: SPARMETSViewer/templates/search_old.html:17
 msgid "Channel"
 msgstr "Chaîne"
 
-#: SPARMETSViewer/templates/report.html:48
-#: SPARMETSViewer/templates/retrieve.html:28
-msgid "Period"
-msgstr "Période"
-
-#: SPARMETSViewer/templates/report.html:49
-#: SPARMETSViewer/templates/retrieve.html:29
-msgid "Valid period is year (2018) or month (2018-06)."
-msgstr "Une période valide est une année (2018) ou un mois (2018-06)."
-
-#: SPARMETSViewer/templates/report.html:112
-msgid "channel"
-msgstr "chaîne"
-
-#: SPARMETSViewer/templates/report.html:118
-msgid "packages"
-msgstr "paquets"
-
-#: SPARMETSViewer/templates/report.html:125
-msgid "files"
-msgstr "fichiers"
-
-#: SPARMETSViewer/templates/report.html:131
-msgid "size"
-msgstr "taille"
-
+#: SPARMETSViewer/templates/report.html:14
+#: SPARMETSViewer/templates/report.html:122
 #: SPARMETSViewer/templates/retrieve.html:26
+#: SPARMETSViewer/templates/search.html:29
+#: SPARMETSViewer/templates/search.html:134
 msgid "Select a channel"
 msgstr "Choisir une chaîne"
 
+#: SPARMETSViewer/templates/report.html:19
+#: SPARMETSViewer/templates/retrieve.html:31
+msgid "Period"
+msgstr "Période"
+
+#: SPARMETSViewer/templates/report.html:20
 #: SPARMETSViewer/templates/retrieve.html:32
+msgid "Valid period is year (2018) or month (2018-06)."
+msgstr "Une période valide est une année (2018) ou un mois (2018-06)."
+
+#: SPARMETSViewer/templates/report.html:83
+msgid "channel"
+msgstr "chaîne"
+
+#: SPARMETSViewer/templates/report.html:89
+msgid "packages"
+msgstr "paquets"
+
+#: SPARMETSViewer/templates/report.html:96
+msgid "files"
+msgstr "fichiers"
+
+#: SPARMETSViewer/templates/report.html:102
+msgid "size"
+msgstr "taille"
+
+#: SPARMETSViewer/templates/retrieve.html:35
 msgid "Display"
 msgstr "Afficher"
 
-#: SPARMETSViewer/templates/retrieve.html:34
-#: SPARMETSViewer/templates/search.html:52
+#: SPARMETSViewer/templates/retrieve.html:37
+#: SPARMETSViewer/templates/search.html:40
 #: SPARMETSViewer/templates/search_old.html:60
 msgid "Title"
 msgstr "Titre"
 
-#: SPARMETSViewer/templates/retrieve.html:35
+#: SPARMETSViewer/templates/retrieve.html:38
 msgid "Creator"
 msgstr "Auteur"
 
-#: SPARMETSViewer/templates/retrieve.html:36
+#: SPARMETSViewer/templates/retrieve.html:39
 msgid "File count"
 msgstr "Nbre de fichiers"
 
-#: SPARMETSViewer/templates/retrieve.html:37
+#: SPARMETSViewer/templates/retrieve.html:40
 msgid "Size"
 msgstr "Taille"
 
-#: SPARMETSViewer/templates/retrieve.html:38
+#: SPARMETSViewer/templates/retrieve.html:41
 msgid "Record number"
 msgstr "Notice"
 
-#: SPARMETSViewer/templates/retrieve.html:39
+#: SPARMETSViewer/templates/retrieve.html:42
 msgid "Call number"
 msgstr "Cote"
 
-#: SPARMETSViewer/templates/retrieve.html:40
+#: SPARMETSViewer/templates/retrieve.html:43
 msgid "Ingest date"
 msgstr "Date de versement"
 
-#: SPARMETSViewer/templates/retrieve.html:188
-#: SPARMETSViewer/templates/search.html:107
+#: SPARMETSViewer/templates/retrieve.html:174
+#: SPARMETSViewer/templates/search.html:103
 msgid "ark"
 msgstr "ark"
 
-#: SPARMETSViewer/templates/retrieve.html:206
-#: SPARMETSViewer/templates/search.html:120
+#: SPARMETSViewer/templates/retrieve.html:192
+#: SPARMETSViewer/templates/search.html:116
 msgid "details"
 msgstr "détails"
 
-#: SPARMETSViewer/templates/search.html:4
+#: SPARMETSViewer/templates/search.html:22
 #: SPARMETSViewer/templates/search_old.html:13
 #, python-format
 msgid "Fill in the fields to make a query on the platform %(platform)s."
@@ -644,12 +707,12 @@ msgstr ""
 "Renseigner les champs pour construire une requête sur la plateforme "
 "%(platform)s."
 
-#: SPARMETSViewer/templates/search.html:48
+#: SPARMETSViewer/templates/search.html:36
 #: SPARMETSViewer/templates/search_old.html:56
 msgid "Origin identifier"
 msgstr "Identifiant d'origine"
 
-#: SPARMETSViewer/templates/search.html:56
+#: SPARMETSViewer/templates/search.html:44
 #: SPARMETSViewer/templates/search_old.html:64
 msgid "Type"
 msgstr "Type"

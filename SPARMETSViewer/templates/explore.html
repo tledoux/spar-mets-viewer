@@ -21,6 +21,9 @@
     <script type="text/javascript" src="/static/js/vis.min.js"></script>
 {%endblock%}
 {% block content %}
+  <div class="alert alert-danger" id="alertMsg">
+    <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
+  </div>
   <div class="well">
   <p>{{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}</p>
   </div>
@@ -39,16 +42,12 @@
       </div>
     </div>
     
-    <!--<div class="form-group">
-      <button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button>
-    </div>-->
-    
   </div>
   <hr />
   <div id="result" class="graph">
-  <div id="toolbar">
-  <button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button>
-  </div>
+  <div id="toolbar"><div class="row">
+  <div class="col-md-1"><button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button></div><div class="col-md-11"><small><span id="msg">Le graphe ci-dessous a été simplifié pour améliorer la lisibilité (toutes les énumérations en XXX ont été réduites à un seul noeud). Vous pouvez interagir avec le graphe en zoomant ou en le déplaçant.</span></small></div>
+  </div></div>
   <div id="network"></div>
   </div>
 <!-- color: "#c47c48"  set, group
@@ -90,8 +89,8 @@ color:"#8cc43d" file
           enabled:true,
           levelSeparation: 400,
           nodeSpacing: 400,
-          direction: 'UD',        // UD, DU, LR, RL
-          sortMethod: 'directed'   // hubsize, directed
+          direction: 'UD', // UD, DU, LR, RL
+          sortMethod: 'hubsize' // hubsize, directed
         }
       },
       physics: {
@@ -140,9 +139,18 @@ color:"#8cc43d" file
   <script>
     var $button = $("#btnSubmit")
     var $ark = $("#ark")
-    
+
+    function showAlert() {
+        $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
+          $("#alertMsg").slideUp(500);
+        });
+    }
+
     // onReady function
     $(function () {
+      activeNavItem('explore');
+      $("#alertMsg").hide();
+
       $("#btnToggle").click(function() {
         wHeight = $( window ).height()
         $('.graph').toggleClass('fullscreen')
@@ -151,13 +159,21 @@ color:"#8cc43d" file
         } else {
           $("#network").height(400)
         }
-        console.log("Hauteur", $("#network").height(), "pour", $( window ).height())
+        // console.log("Hauteur", $("#network").height(), "pour", $( window ).height())
       });
       
       $button.click(function () {
         // Download the graph corresponding to the ark
         ark = $ark.val()
+        if (ark == "") {
+          // Display an error
+          $("#msgerr").text("{{ _('Valid ARK is in the form bxxxx.') }}")
+          showAlert();
+          return;
+        }
         //alert(ark)
+        var oldMsg = $("#msg").text()
+        $("#msg").text("{{ _('Loading...') }}")
         url = '/graph?ark=' + ark
         $.getJSON(url, function(data) {
           var nodes = {}
@@ -277,6 +293,7 @@ color:"#8cc43d" file
           network.stopSimulation()
           network.setData(data)
           network.startSimulation()
+          $("#msg").text(oldMsg)
         });
       });
     });

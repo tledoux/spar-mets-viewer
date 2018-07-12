@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """How to parse a METS file."""
 
+import json
 import os
 import sys
 
@@ -678,6 +679,7 @@ class METSFile(object):
         else:
             self.nickname += " - " + self.ark
 
+        # print("THL JSON ", json.dumps(dc_metadata, sort_keys=True, indent=2), file=sys.stderr)
         mets_instance = METS(mets_filename, self.nickname, principal_level,
                              original_files, dc_metadata, divs, original_file_count)
         isSuccess = True

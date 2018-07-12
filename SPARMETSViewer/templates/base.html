@@ -18,7 +18,6 @@
     -->
     <link rel="stylesheet" href="/static/css/bootstrap-table.min.css">
     {% block stylesheet %}{%endblock%}
-
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <!--<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>-->
     <script type="text/javascript" src="/static/js/bootstrap.bundle.min.js"></script>
@@ -30,16 +29,45 @@
 <!--    <script type="text/javascript" src="http://rawgit.com/hhurz/tableExport.jquery.plugin/master/tableExport.js"></script>-->
     <script type="text/javascript" src="/static/js/tableExport.js"></script>
     <script type="text/javascript" src="/static/js/rdfDecorator.js"></script>
+    <script>
+      // Handle the active nav item
+      $('.navbar-nav .nav-link').click(function() {
+        $('.navbar-nav .nav-link').removeClass('active');
+        $(this).addClass('active');
+      })
+      function activeNavItem(item) {
+        $('.navbar-nav .nav-link').removeClass('active');
+        $('.navbar-nav .nav-link.mv-'+item).addClass('active');
+      }
+    </script>
     {% block javascriptlib %}{%endblock%}
 </head>
 <body>
-<nav class="navbar navbar-dark bg-primary">
+<nav class="navbar navbar-expand-md navbar-dark bg-primary">
   <a class="navbar-brand" href="/">SPAR METS Viewer</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+  <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
   <ul class="navbar-nav mr-auto">
     <li class="nav-item">
-      <a class="nav-link" href="/upload">{{ _('Upload') }}</a>
+      <a class="nav-link mv-home active" href="/"><span class="fa fa-home"></span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link mv-upload" href="/upload">{{ _('Upload') }}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link mv-explore" href="/explore">{{ _('Exploration') }}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link mv-report" href="/report">{{ _('Report') }}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link mv-reference" href="/referenceInfo">{{ _('Reference') }}</a>
     </li>
   </ul>
+  <!--<span class="navbar-text">v3.0</span>-->
+  </div>
 </nav>
 {% if success %}
 <div class="alert alert-success">{{ success }}</div>

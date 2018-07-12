@@ -84,8 +84,21 @@ def label_access(label):
     return jsonify(results)
 
 
+@app.route("/reference", methods=['GET'])
+def reference_data_access():
+    """Make a SPARQL query to retrieve reference data"""
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+    kind = request.args.get("kind")
+    if not kind:
+        return Response("No kind parameter", status=codes.bad_request, mimetype="text/plain")
+    ref_data = ReferenceData(platform)
+    return jsonify(ref_data.get_data(kind))
+
+
 @app.route("/reference/<kind>", methods=['GET'])
-def reference_data_access(kind):
+def reference_data_rest(kind):
     """Make a SPARQL query to retrieve reference data"""
     platform = app.config['ACCESS_PLATFORM']
     if platform is None:
@@ -325,31 +338,54 @@ def sparql_query():
     return response.content
 
 
+@app.route("/referenceInfo", methods=['GET', 'POST'])
+def reference_info():
+    """Access to the reference data"""
+    return render_template(
+        'reference.html',
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=app.config['ACCESS_PLATFORM'])
+
+
 @app.route("/search", methods=['GET', 'POST'])
 def search_ark():
     """Access to the search choice"""
+    platform = app.config['ACCESS_PLATFORM']
+    ref_data = ReferenceData(platform)
+    channels = ref_data.get_data("channel")
     return render_template(
         'search.html',
+        channels=channels,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=app.config['ACCESS_PLATFORM'])
+        access_platform=platform)
 
 
 @app.route("/report", methods=['GET', 'POST'])
 def report():
     """Access to the search choice"""
+    platform = app.config['ACCESS_PLATFORM']
+    ref_data = ReferenceData(platform)
+    channels = ref_data.get_data("channel")
+
     return render_template(
         'report.html',
+        channels=channels,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=app.config['ACCESS_PLATFORM'])
+        access_platform=platform)
 
 
 @app.route("/retrieve", methods=['GET', 'POST'])
 def retrieve():
     """Access to the retrieve form"""
+    platform = app.config['ACCESS_PLATFORM']
+    ref_data = ReferenceData(platform)
+    channels = ref_data.get_data("channel")
+
     return render_template(
         'retrieve.html',
+        channels=channels,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=app.config['ACCESS_PLATFORM'])
+        access_platform=platform)
 
 
 @app.route("/explore", methods=['GET', 'POST'])
