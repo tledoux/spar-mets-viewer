@@ -269,7 +269,7 @@ def get_graph():
         GRAPH ?g {
           ?arkvr a sparstructure:group.
           ?s ?p ?o.
-        } """ % ark
+        } }""" % ark
     app.logger.debug("Get graph endpoint %s", endpoint)
 
     response = get(
