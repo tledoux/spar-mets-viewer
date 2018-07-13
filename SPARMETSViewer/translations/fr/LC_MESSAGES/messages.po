@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-07-12 15:01+0200\n"
+"POT-Creation-Date: 2018-07-13 02:06+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,7 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/report.html:66
+#: SPARMETSViewer/identifiers.py:13 SPARMETSViewer/templates/md5compute.html:70
+#: SPARMETSViewer/templates/report.html:66
 msgid "bytes"
 msgstr "octets"
 
@@ -168,32 +169,32 @@ msgstr "fichier"
 msgid "en"
 msgstr "fr"
 
-#: SPARMETSViewer/views.py:415
+#: SPARMETSViewer/views.py:423
 msgid "No file part"
 msgstr "Pas de fichier"
 
-#: SPARMETSViewer/views.py:425
+#: SPARMETSViewer/views.py:433
 msgid "No selected file"
 msgstr "Pas de fichier séléctionné"
 
-#: SPARMETSViewer/views.py:443 SPARMETSViewer/views.py:509
+#: SPARMETSViewer/views.py:451 SPARMETSViewer/views.py:517
 msgid "METS already exists"
 msgstr "Le fichier METS existe déjà"
 
-#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:451
-#: SPARMETSViewer/views.py:517
+#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:459
+#: SPARMETSViewer/views.py:525
 msgid "Success! METS file uploaded!"
 msgstr "Succès ! Fichier METS téléchargé !"
 
-#: SPARMETSViewer/views.py:454
+#: SPARMETSViewer/views.py:462
 msgid "Not allowed selected file"
 msgstr "Fichier sélectionné non autorisé"
 
-#: SPARMETSViewer/views.py:471
+#: SPARMETSViewer/views.py:479
 msgid "No ARK part"
 msgstr "Pas d'ARK fourni"
 
-#: SPARMETSViewer/views.py:493
+#: SPARMETSViewer/views.py:501
 msgid "METS not found"
 msgstr "METS non trouvé"
 
@@ -271,7 +272,6 @@ msgid "ID"
 msgstr "ID"
 
 #: SPARMETSViewer/templates/aip.html:129
-#: SPARMETSViewer/templates/search_old.html:126
 msgid "Details"
 msgstr "Détails"
 
@@ -306,7 +306,6 @@ msgstr "Date :"
 #: SPARMETSViewer/templates/base.html:57
 #: SPARMETSViewer/templates/retrieve.html:168
 #: SPARMETSViewer/templates/search.html:94
-#: SPARMETSViewer/templates/search_old.html:128
 msgid "Upload"
 msgstr "Téléchargement"
 
@@ -323,8 +322,13 @@ msgstr "Bilan"
 msgid "Reference"
 msgstr "Référentiel"
 
-#: SPARMETSViewer/templates/base.html:77
+#: SPARMETSViewer/templates/base.html:69
+msgid "MD5 Hash"
+msgstr "Empreinte MD5"
+
+#: SPARMETSViewer/templates/base.html:80
 #: SPARMETSViewer/templates/explore.html:25
+#: SPARMETSViewer/templates/md5compute.html:34
 #: SPARMETSViewer/templates/reference.html:19
 #: SPARMETSViewer/templates/report.html:4
 #: SPARMETSViewer/templates/search.html:19
@@ -532,7 +536,6 @@ msgstr "Un ARK valide est de la forme bxxxx."
 #: SPARMETSViewer/templates/report.html:22
 #: SPARMETSViewer/templates/retrieve.html:47
 #: SPARMETSViewer/templates/search.html:47
-#: SPARMETSViewer/templates/search_old.html:67
 #: SPARMETSViewer/templates/upload.html:24
 #: SPARMETSViewer/templates/upload.html:41
 msgid "Submit"
@@ -572,6 +575,39 @@ msgstr "Actions"
 #: SPARMETSViewer/templates/index.html:40
 msgid "Delete"
 msgstr "Supprimer"
+
+#: SPARMETSViewer/templates/md5compute.html:37
+msgid "Compute the MD5 HASH"
+msgstr "Calcul de l'empreinte MD5"
+
+#: SPARMETSViewer/templates/md5compute.html:38
+msgid "Select a file from your computer"
+msgstr "Choisir un fichier sur votre ordinateur"
+
+#: SPARMETSViewer/templates/md5compute.html:50
+msgid "Or drag and drop the file below"
+msgstr "Ou glisser/déposer un fichier ci-dessous"
+
+#: SPARMETSViewer/templates/md5compute.html:52
+msgid "Just drag and drop the file here"
+msgstr "Glisser/déposer simplement un fichier ici"
+
+#: SPARMETSViewer/templates/md5compute.html:63
+msgid "Filename"
+msgstr "Nom du fichier"
+
+#: SPARMETSViewer/templates/md5compute.html:67
+#: SPARMETSViewer/templates/retrieve.html:40
+msgid "Size"
+msgstr "Taille"
+
+#: SPARMETSViewer/templates/md5compute.html:74
+msgid "MD5 HASH"
+msgstr "Empreinte MD5"
+
+#: SPARMETSViewer/templates/md5compute.html:77
+msgid "Copy"
+msgstr "Copier"
 
 #: SPARMETSViewer/templates/reference.html:22
 #, python-format
@@ -617,7 +653,6 @@ msgstr ""
 #: SPARMETSViewer/templates/report.html:12
 #: SPARMETSViewer/templates/retrieve.html:24
 #: SPARMETSViewer/templates/search.html:27
-#: SPARMETSViewer/templates/search_old.html:17
 msgid "Channel"
 msgstr "Chaîne"
 
@@ -661,7 +696,6 @@ msgstr "Afficher"
 
 #: SPARMETSViewer/templates/retrieve.html:37
 #: SPARMETSViewer/templates/search.html:40
-#: SPARMETSViewer/templates/search_old.html:60
 msgid "Title"
 msgstr "Titre"
 
@@ -672,10 +706,6 @@ msgstr "Auteur"
 #: SPARMETSViewer/templates/retrieve.html:39
 msgid "File count"
 msgstr "Nbre de fichiers"
-
-#: SPARMETSViewer/templates/retrieve.html:40
-msgid "Size"
-msgstr "Taille"
 
 #: SPARMETSViewer/templates/retrieve.html:41
 msgid "Record number"
@@ -700,7 +730,6 @@ msgid "details"
 msgstr "détails"
 
 #: SPARMETSViewer/templates/search.html:22
-#: SPARMETSViewer/templates/search_old.html:13
 #, python-format
 msgid "Fill in the fields to make a query on the platform %(platform)s."
 msgstr ""
@@ -708,18 +737,12 @@ msgstr ""
 "%(platform)s."
 
 #: SPARMETSViewer/templates/search.html:36
-#: SPARMETSViewer/templates/search_old.html:56
 msgid "Origin identifier"
 msgstr "Identifiant d'origine"
 
 #: SPARMETSViewer/templates/search.html:44
-#: SPARMETSViewer/templates/search_old.html:64
 msgid "Type"
 msgstr "Type"
-
-#: SPARMETSViewer/templates/search_old.html:74
-msgid "Search in progress."
-msgstr "Recherche en cours"
 
 #: SPARMETSViewer/templates/upload.html:5
 #, python-format

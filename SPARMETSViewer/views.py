@@ -338,6 +338,14 @@ def sparql_query():
     return response.content
 
 
+@app.route("/compute", methods=['GET', 'POST'])
+def compute_md5():
+    """Access to the md5 computation"""
+    return render_template(
+        'md5compute.html',
+        access_platform=app.config['ACCESS_PLATFORM'])
+
+
 @app.route("/referenceInfo", methods=['GET', 'POST'])
 def reference_info():
     """Access to the reference data"""
