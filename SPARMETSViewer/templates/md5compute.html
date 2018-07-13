@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block stylesheet %}
+  <style>
+    /* layout.css Style */
+    .upload-drop-zone {
+      height: 100px;
+      border-width: 2px;
+      margin-bottom: 20px;
+    }
+
+    /* skin.css Style*/
+    .upload-drop-zone {
+      color: #ccc;
+      border-style: dashed;
+      border-color: #ccc;
+      line-height: 100px;
+      text-align: center
+    }
+    .upload-drop-zone.drop {
+      color: #222;
+      border-color: #222;
+    }
+  </style>
+{% endblock %}
+{% block javascriptlib %}
+  <script type="text/javascript" src="/static/js/spark-md5.min.js"></script>
+{%endblock%}
+{% block content %}
+  <div class="alert alert-danger" id="alertMsg">
+    <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
+  </div>
+  <div class="well">
+  <h3>{{ _('Compute the MD5 HASH') }}</h3>
+  <p>{{ _('Select a file from your computer') }}</p>
+  </div>
+  <!--<h3>with <a target="_blank" href="//github.com/satazor/SparkMD5">SparkMD5</a></h3>-->
+  <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
+    <div class="form-inline">
+      <div class="form-group">
+        <input type="file" name="files[]" id="js-upload-files">
+      </div>
+    </div>
+  </form>
+
+  <!-- Drop Zone -->
+  <p>{{ _('Or drag and drop the file below') }}</p>
+  <div class="upload-drop-zone" id="drop-zone">
+    {{ _('Just drag and drop the file here') }}
+  </div>
+  <p></p>
+  <!-- Progress Bar -->
+  <div class="progress">
+    <div class="progress-bar progress-bar-striped" style="width:0%"></div>
+  </div> 
+  <p></p>
+  <div class="form-control">
+    <div class="form-group row">
+      <label for="filename" class="control-label col-md-2">{{ _('Filename') }}</label>
+      <input id="filename" class="form-control col-md-6" type="text" />
+    </div>
+    <div class="form-group row">
+      <label for="filesize" class="control-label col-md-2">{{ _('Size') }}</label>
+      <input id="filesize" class="form-control col-md-6" type="text" />
+      <div class="input-group-append">
+       <span class="input-group-text"> {{ _('bytes') }}</span>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="result" class="control-label col-md-2">{{ _('MD5 HASH') }}</label>
+      <input id="result" class="form-control col-md-6" type="text" />
+      <div class="input-group-append">
+          <a id="btnCopy" class="btn btn-success" href="#" role="button"><span class="fa fa-clipboard"></span> {{ _('Copy') }}</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    $(function () {
+        activeNavItem('compute');
+        $("#alertMsg").hide();
+    });
+    var $dropZone = $("#drop-zone");
+    var $uploadForm = $("#js-upload-form");
+    var $uploadFiles = $("#js-upload-files");
+    var $progressBar = $(".progress-bar")
+
+    $('#btnCopy').click(function() {
+      $('#result').select()
+       // Copy the text inside the text field
+      document.execCommand("copy");
+    });
+      
+    $uploadFiles.change(function() {
+      startUpload(this.files)
+    })
+
+    $dropZone.on("drop", function(e) {
+        e.preventDefault();  
+        e.stopPropagation();
+        // console.log("Dropping ", e.originalEvent.dataTransfer.files)
+        startUpload(e.originalEvent.dataTransfer.files)
+    });
+    $dropZone.on("dragover", function(e) {
+        e.preventDefault();  
+        e.stopPropagation();
+        $(this).addClass('drop');
+    });
+    $dropZone.on("dragleave", function(event) {
+        e.preventDefault();  
+        e.stopPropagation();
+        $(this).removeClass('drop');
+    });
+
+    var startUpload = function(files) {
+      $progressBar.css("width", "0%").text("0 %")
+      $progressBar.removeClass("bg-danger")
+      var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
+        file = files[0],
+        chunkSize = 2097152, // read in chunks of 2MB
+        chunks = Math.ceil(file.size / chunkSize),
+        currentChunk = 0,
+        spark = new SparkMD5.ArrayBuffer(),
+        frOnload = function(e) {
+          percent = Math.floor(parseInt(currentChunk + 1) / chunks)
+          $progressBar.css("width", percent + "%").text(percent + " %");
+          spark.append(e.target.result); // append array buffer
+          currentChunk++;
+          if (currentChunk < chunks) {
+            loadNext();
+          } else {
+            // End of computation
+            hash = spark.end()
+            $("#result").val(hash)
+            $progressBar.css("width", "100%").text("100 %")
+          }
+        },
+        frOnerror = function () {
+          $progressBar.addClass("bg-danger")
+          $progressBar.css("width", "0%").text("ERROR !!!")
+        };
+        
+      function loadNext() {
+        var fileReader = new FileReader();
+        fileReader.onload = frOnload;
+        fileReader.onerror = frOnerror;
+        var start = currentChunk * chunkSize,
+          end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+        fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+      };
+      $("#filename").val(file.name)
+      fileSize = file.size.toString().replace(/\B(?=(?:\d{3})+(?!\d))/g, ' ')
+      $("#filesize").val(fileSize)
+      loadNext();
+    }
+  </script>
+{% endblock %}
