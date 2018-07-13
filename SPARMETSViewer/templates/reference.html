@@ -71,7 +71,9 @@
     var $table = $("#table")
     var $button = $("#btnSubmit")
     var $selectReference = $("#reference")
-    function showAlert() {
+    var init = true
+    function showError(msg) {
+        $("#msgerr").text(msg)
         $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
           $("#alertMsg").slideUp(500);
         });
@@ -79,6 +81,7 @@
     
     // onReady function
     $(function () {
+        init = true
         activeNavItem('reference');
          $("#alertMsg").hide();
 
@@ -103,9 +106,12 @@
       // Get the filters
       params.kind = $selectReference.val()
       if (params.kind == '') {
-        // Display an error
-        $("#msgerr").text("{{ _('Select a reference') }}")
-        showAlert();
+        if (init) {
+          init = false
+        } else {
+          // Display an error
+          showError("{{ _('Select a reference') }}")
+        }
         return false
       }
       

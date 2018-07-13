@@ -75,7 +75,8 @@
   <script>
     var $table = $("#table")
     var $button = $("#btnSubmit")
-    function showAlert() {
+    function showError(msg) {
+        $("#msgerr").text(msg)
         $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
           $("#alertMsg").slideUp(500);
         });
@@ -131,8 +132,7 @@
       var channel = $("#channel").val()
       if (channel == "") {
         // Display an error
-        $("#msgerr").text("{{ _('Select a channel') }}")
-        showAlert();
+        showError("{{ _('Select a channel') }}");
         return
       }
       var originId = $("#origin_id").val()

@@ -140,7 +140,8 @@ color:"#8cc43d" file
     var $button = $("#btnSubmit")
     var $ark = $("#ark")
 
-    function showAlert() {
+    function showError(msg) {
+        $("#msgerr").text(msg)
         $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
           $("#alertMsg").slideUp(500);
         });
@@ -167,8 +168,7 @@ color:"#8cc43d" file
         ark = $ark.val()
         if (ark == "") {
           // Display an error
-          $("#msgerr").text("{{ _('Valid ARK is in the form bxxxx.') }}")
-          showAlert();
+          showError("{{ _('Valid ARK is in the form bxxxx.') }}");
           return;
         }
         //alert(ark)
