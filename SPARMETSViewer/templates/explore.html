@@ -24,26 +24,25 @@
   <div class="alert alert-danger" id="alertMsg">
     <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
   </div>
-  <div class="well">
-  <p>{{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}</p>
-  </div>
- 
-  <div class="form-control">
-    <div class="form-group">
-      <label for="ark" class="control-label">{{ _('Ark Identifier:') }}</label>
-      <div class="input-group mb-3">
+
+  <div class="card mt-2">
+  <p class="card-subtitle mx-2 my-1">
+  {{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}
+  </p>
+  <div class="form-group mx-1 my-1">
+    <div class="row mx-1 my-1">
+      <label for="ark" class="control-label col-md-2">{{ _('Ark Identifier') }}</label>
+      <div class="input-group col-md-10">
         <div class="input-group-prepend">
           <span class="input-group-text" id="ark-addon">{{ ark_prefix }}</span>
         </div>
-        <input type="text" class="form-control" name="ark" id="ark" aria-describedby="ark-addon" placeholder="bpt6k206840w" pattern="b[0-9bcdfghijkmnpqrstvwxz]+" title= "{{ _('Valid ARK is in the form bxxxx.') }}" value="{{ ark or "" }}" />
-        <div class="input-group-append">
-          <button class="btn btn-success" id="btnSubmit"><span class="fa fa-search"></span> {{ _('Submit') }}</button>
-        </div>
+        <input type="text" class="form-control form-control-sm" name="ark" id="ark" aria-describedby="ark-addon" placeholder="bpt6k206840w" pattern="b[0-9bcdfghijkmnpqrstvwxz]+" title= "{{ _('Valid ARK is in the form bxxxx.') }}" value="{{ ark or "" }}" />
       </div>
     </div>
-    
+    <button class="btn btn-primary mx-1 my-1" id="btnSubmit" type="button">{{ _('Submit') }}</button>
   </div>
-  <hr />
+  </div>
+  <hr class="mx-2 my-2" />
   <div id="result" class="graph">
   <div id="toolbar"><div class="row">
   <div class="col-md-1"><button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button></div><div class="col-md-11"><small><span id="msg">Le graphe ci-dessous a été simplifié pour améliorer la lisibilité (toutes les énumérations en XXX ont été réduites à un seul noeud). Vous pouvez interagir avec le graphe en zoomant ou en le déplaçant.</span></small></div>

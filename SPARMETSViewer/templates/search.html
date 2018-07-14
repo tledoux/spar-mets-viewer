@@ -1,52 +1,50 @@
 {% extends "base.html" %}
 {% block stylesheet %}
-    <link rel="stylesheet" href="/static/css/bootstrap-select.min.css">
-    <!-- 
-      Correct bootstrap-select bug 
-      https://github.com/silviomoreto/bootstrap-select/issues/1135
-    -->
-    <style type="text/css">
-    .open > .dropdown-menu { display: block; }
-    </style>
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css -->
+    <link rel="stylesheet" href="/static/css/bootstrap-select-1.13.1.min.css">
 {% endblock %}
 {% block javascriptlib %}
-    <script type="text/javascript" src="/static/js/bootstrap-select.min.js"></script>
-    <script type="text/javascript" src="/static/js/defaults-en_US.min.js"></script>
-    <script type="text/javascript" src="/static/js/defaults-fr_FR.min.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap-select-1.13.1.min.js"></script>
 {%endblock%}
 {% block content %}
   <div class="alert alert-danger" id="alertMsg">
     <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
   </div>
-  <div class="well">
-  <p>{{ _('Fill in the fields to make a query on the platform %(platform)s.', platform=access_platform) }}</p>
-  </div>
- 
-  <div class="form-control">
-    <div class="form-group row">
+  <div class="card mt-2">
+  <p class="card-subtitle mx-2 my-1">
+  {{ _('Fill in the fields to make a query on the platform %(platform)s.', platform=access_platform) }}
+  </p>
+  <div class="form-group my-1">
+    <div class="row mx-1 my-1">
       <label for="channel" class="control-label col-md-2">{{ _('Channel') }}</label>
-      <select id="channel" class="selectpicker control-label col-md-4">
+      <select id="channel" class="selectpicker show-tick form-control form-control-sm col-md-4">
         <option value="" selected="selected"><i>{{ _('Select a channel') }}</i></option>
         {% for channel in channels %}
         <option value="{{ channel.id }}">{{ channel.label }}</option>
         {% endfor %}
       </select>
-    <!--</div>
-    <div class="form-group">-->
       <label for="origin_id" class="control-label col-md-2">{{ _('Origin identifier') }}</label>
-      <input type="text" name="origin_id" id="origin_id" class="col-md-4" placeholder="206840"/>
+      <input type="text" name="origin_id" id="origin_id" class="form-control form-control-sm col-md-4" placeholder="206840"/>
     </div>
-    <div class="form-group row">
+    <div class="row mx-1 my-1">
       <label for="title" class="control-label col-md-2">{{ _('Title') }}</label>
-      <input type="text" name="title" id="title" class="col-md-4" placeholder="Mon titre"/>
-    <!--</div>
-    <div class="form-group">-->
+      <input type="text" name="title" id="title" class="form-control form-control-sm col-md-4" placeholder="Mon titre"/>
       <label for="type" class="control-label col-md-2">{{ _('Type') }}</label>
-      <input type="text" name="type" id="type" class="col-md-4" placeholder="monograph"/>
+      <input type="text" name="type" id="type" class="form-control form-control-sm col-md-4" placeholder="monograph"/>
     </div>
-    <button class="btn btn-primary" id="btnSubmit" type="button">{{ _('Submit') }}</button>
-  </div>
-  <hr />
+    <div class="row mx-1 my-1">
+      <label for="arkrecord" class="control-label col-md-2">{{ _('Ark record') }}</label>
+      <div class="input-group col-md-4">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="ark-addon">{{ ark_prefix }}</span>
+        </div>
+        <input type="text" class="form-control form-control-sm" name="arkrecord" id="arkrecord" aria-describedby="ark-addon" placeholder="cb316013536" pattern="c[0-9bcdfghijkmnpqrstvwxz]+" title= "{{ _('Valid ARK is in the form cxxxx.') }}" />
+      </div>
+    </div>
+    <button class="btn btn-primary mx-1 my-1" id="btnSubmit" type="button">{{ _('Submit') }}</button>
+  </div></div>
+
+  <hr class="mx-2 my-2" />
   <div id="result">
   <div id="toolbar">
   <p><em>{{ _('Click on any column header to sort the table by that value.') }}</em></p>
@@ -138,6 +136,7 @@
       var originId = $("#origin_id").val()
       var type = $("#type").val()
       var title = $("#title").val()
+      var arkRecord = $("#arkrecord").val()
 
       // Disable the buttons
       $button.attr("disabled", "disabled")
@@ -145,13 +144,13 @@
       
       // Build the SPARQL
       var sparql = "SELECT " +
-        "?ark (?prodId AS ?identifiant) ?titre WHERE { " +
+        "?ark (?prodId AS ?identifiant) (SAMPLE(?titr) AS ?titre) WHERE { " +
         "?ark sparcontext:hasLastVersion/sparcontext:hasLastRelease ?p." +
         "GRAPH ?g {" +
         "?p a sparstructure:group. " +
         "?p sparcontext:isMemberOf <" + channel + ">. " +
         "?p sparreference:productionIdentifier ?prodId. " +
-        "OPTIONAL {?p dc:title ?titre} " +
+        "OPTIONAL {?p dc:title ?titr} " +
         "OPTIONAL {?p dc:type ?type} "
       if (originId) {
         sparql += "?p sparreference:productionIdentifier \"" + originId + "\". "
@@ -160,7 +159,10 @@
         sparql += "?p dc:type \"" + type + "\"."
       }
       if (title) {
-        sparql += " FILTER(CONTAINS(?titre, \"" + title + "\")) "
+        sparql += " FILTER(CONTAINS(?titr, \"" + title + "\")) "
+      }
+      if (arkRecord) {
+        sparql += " ?p dc:relation <ark:/12148/" + arkRecord + "> "
       }
       sparql += "} } ORDER BY ?prodId LIMIT 20"
       console.log("SPARQL [" + endpoint + "]: " + sparql)

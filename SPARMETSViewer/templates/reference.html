@@ -1,40 +1,44 @@
 {% extends "base.html" %}
 {% block stylesheet %}
-    <link rel="stylesheet" href="/static/css/bootstrap-select.min.css">
-    <!-- 
-      Correct bootstrap-select bug 
-      https://github.com/silviomoreto/bootstrap-select/issues/1135
-    -->
-    <style type="text/css">
-    .open > .dropdown-menu { display: block; }
-    </style>
+    <link rel="stylesheet" href="/static/css/bootstrap-select-1.13.1.min.css">
 {% endblock %}
 {% block javascriptlib %}
-    <script type="text/javascript" src="/static/js/bootstrap-select.min.js"></script>
-    <script type="text/javascript" src="/static/js/defaults-en_US.min.js"></script>
-    <script type="text/javascript" src="/static/js/defaults-fr_FR.min.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap-select-1.13.1.min.js"></script>
 {%endblock%}
 {% block content %}
   <div class="alert alert-danger" id="alertMsg">
     <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
   </div>
-  <div class="well">
-  <p>{{ _('Select a reference to get back the information from the platform %(platform)s.', platform=access_platform) }}</p>
-  </div>
- 
-  <div class="form-control">
-    <div class="form-group row">
+  <div class="card mt-2">
+  <p class="card-subtitle mx-2 my-1">
+  {{ _('Select a reference to get back the information from the platform %(platform)s.', platform=access_platform) }}
+  </p>
+  <div class="form-group my-1">
+    <div class="row mx-1 my-1">
       <label for="reference" class="control-label col-md-2">{{ _('Reference') }}</label>
-      <select id="reference" class="selectpicker">
+      <select id="reference" class="selectpicker show-tick form-control form-control-sm col-md-4">
         <option value="" selected="selected"><i>{{ _('Select a reference') }}</i></option>
+        <optgroup label="{{ _('General') }}">
         <option value="channel">{{ _('Channels') }}</option>
         <option value="use">{{ _('Uses') }}</option>
+        <option value="type">{{ _('Types') }}</option>
         <option value="event">{{ _('Events') }}</option>
+        </optgroup>
+        <optgroup label="{{ _('Formats') }}">
+          <option value="knownFormat">{{ _('Known formats') }}</option>
+          <option value="managedFormat">{{ _('Managed formats') }}</option>
+        </optgroup>
+        <optgroup label="{{ _('Tools') }}">
+          <option value="identificationTool">{{ _('Identification tools') }}</option>
+          <option value="characterizationTool">{{ _('Characterization tools') }}</option>
+          <option value="validationTool">{{ _('Validation tools') }}</option>
+        </optgroup>
       </select>
     </div>
-    <button class="btn btn-primary" id="btnSubmit" type="button">{{ _('Submit') }}</button>
+    <button class="btn btn-primary mx-1 mt-1" id="btnSubmit" type="button">{{ _('Submit') }}</button>
   </div>
-  <hr />
+  </div>
+  <hr class="mx-2 my-2" />
   <div id="result">
   <div id="toolbar">
   </div>

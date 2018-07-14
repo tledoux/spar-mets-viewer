@@ -16,7 +16,11 @@ class ReferenceData(Singleton):
     """
     Class for reference data
     """
-    KINDS = ["channel", "use", "event"]
+    KINDS = [
+        "channel", "use", "type", "event",
+        "knownFormat", "managedFormat", 
+        "identificationTool", "characterizationTool", "validationTool"
+    ]
 
     TEST_CHANNELS = [
         {"label": "fil_addn_a", "id": "ark:/12148/br2d2f5z"},
@@ -51,6 +55,14 @@ class ReferenceData(Singleton):
         {"label": "toc", "id": "toc"},
     ]
 
+    TEST_TYPES = [
+        {"label": "harvest data", "id": "harvest data"},
+        {"label": "monograph", "id": "monograph"},
+        {"label": "multivolume monograph", "id": "multivolume monograph"},
+        {"label": "periodical", "id": "periodical"},
+        {"label": "web data", "id": "web data"},
+    ]
+
     TEST_EVENTS = [
         {"label": "audioCutting", "id": "info:bnf/spar/provenance#audioCutting",
          "title": "Découpage du fichier audio"},
@@ -60,6 +72,18 @@ class ReferenceData(Singleton):
          "title": "Réception du document"},
         {"label": "ingestCompletion", "id": "info:bnf/spar/provenance#ingestCompletion",
          "title": "Fin du versement"},
+    ]
+
+    TEST_FORMATS = [
+        {"label": "jpeg", "id": "ark:/12148/br2",
+         "title": "Format JPEG", "desc": "image/jpeg"},
+    ]
+
+    TEST_TOOLS = [
+        {"label": "jhove_1_5", "id": "ark:/12148/br2",
+         "title": "Outil Jhove 1.5"},
+        {"label": "jhove_1_18", "id": "ark:/12148/br2",
+         "title": "Outil Jhove 1.18"},
     ]
 
     def __init__(self, platform):
@@ -83,8 +107,14 @@ class ReferenceData(Singleton):
                 return ReferenceData.TEST_CHANNELS
             elif kind == "use":
                 return ReferenceData.TEST_USES
+            elif kind == "type":
+                return ReferenceData.TEST_TYPES
             elif kind == "event":
                 return ReferenceData.TEST_EVENTS
+            elif kind.endswith("Format"):
+                return ReferenceData.TEST_FORMATS
+            elif kind.endswith("Tool"):
+                return ReferenceData.TEST_TOOLS
             else:
                 raise ValueError(kind)
 
@@ -101,6 +131,11 @@ class ReferenceData(Singleton):
                 SELECT DISTINCT (?id AS ?label) ?id WHERE {
                   [] sparrepresentation:isUsedAs ?id.
                 } ORDER BY ?id LIMIT 100"""
+        elif kind == "type":
+            query = """
+                SELECT DISTINCT (?id AS ?label) ?id WHERE {
+                  [] dc:type ?id.
+                } ORDER BY ?id LIMIT 100"""
         elif kind == "event":
             query = """
                 SELECT (STRAFTER(STR(?id), 'provenance#') AS ?label) ?id ?title ?desc WHERE {
@@ -110,5 +145,29 @@ class ReferenceData(Singleton):
                   FILTER (lang(?title) = 'fr')
                   FILTER (lang(?desc) = 'fr')
                 } ORDER BY ?id LIMIT 1000"""
+        elif kind.endswith("Format"):
+            query = """
+                SELECT (STRAFTER(STR(?uri), 'representation/') AS ?label) ?id
+                ?title (GROUP_CONCAT(?mime ;separator=", ") AS ?desc)
+                WHERE {
+                GRAPH ?g {
+                  ?id a sparrepresentation:%s.
+                  ?id owl:sameAs ?uri.
+                  OPTIONAL { ?id rdfs:label ?title. }
+                  OPTIONAL { ?id sparrepresentation:hasMimetype ?mime. }
+                }} ORDER BY ?uri LIMIT 500""" % kind
+        elif kind.endswith("Tool"):
+            query = """
+                SELECT (STRAFTER(STR(?uri), 'agent/') AS ?label) ?id ?title (SAMPLE(?des) AS ?desc)
+                WHERE {
+                GRAPH ?g {
+                  ?id a sparagent:softwareAgent.
+                  ?id a sparrepresentation:%s.
+                  ?id owl:sameAs ?uri.
+                  OPTIONAL { ?id foaf:name ?title. }
+                  OPTIONAL { ?id dc:description ?des. }
+                }
+                } ORDER BY ?uri LIMIT 500
+                """ % kind
         results = simple_query(query)
         return from_sparql_results_to_json(results)

@@ -34,10 +34,11 @@
   <p>{{ _('Select a file from your computer') }}</p>
   </div>
   <!--<h3>with <a target="_blank" href="//github.com/satazor/SparkMD5">SparkMD5</a></h3>-->
+
   <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
     <div class="form-inline">
       <div class="form-group">
-        <input type="file" name="files[]" id="js-upload-files" />
+        <input type="file" name="files[]" class="form-control-file" id="js-upload-files" />
       </div>
     </div>
   </form>
@@ -88,8 +89,8 @@
 
     var $dropZone = $("#drop-zone");
     var $uploadFiles = $("#js-upload-files");
-    var $progressBar = $(".progress-bar")
-    var $result = $("#result")
+    var $progressBar = $(".progress-bar");
+    var $result = $("#result");
 
     $('#btnCopy').click(function() {
       $result.select();
@@ -124,7 +125,7 @@
       $result.val("");
       var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
         file = files[0],
-        chunkSize = 10485760, // read in chunks of 10MB
+        chunkSize = 5242880, // read in chunks of 5MB
         chunks = Math.ceil(file.size / chunkSize),
         currentChunk = 0,
         spark = new SparkMD5.ArrayBuffer(),
@@ -166,7 +167,7 @@
       $("#filename").val(file.name);
       fileSize = file.size.toString().replace(/\B(?=(?:\d{3})+(?!\d))/g, ' ');
       $("#filesize").val(fileSize);
-      // Begin the upload ans the calculation
+      // Begin the upload and the comptutation
       loadNext();
     }
   </script>
