@@ -17,10 +17,12 @@ class ReferenceData(Singleton):
     Class for reference data
     """
     KINDS = [
-        "channel", "use", "type", "event",
-        "knownFormat", "managedFormat", 
+        "channel", "use", "type", "event", "ontology",
+        "knownFormat", "managedFormat",
         "identificationTool", "characterizationTool", "validationTool"
     ]
+
+    TEST_REF_DATE = "2018-07-21T10:00:00Z"
 
     TEST_CHANNELS = [
         {"label": "fil_addn_a", "id": "ark:/12148/br2d2f5z"},
@@ -74,6 +76,15 @@ class ReferenceData(Singleton):
          "title": "Fin du versement"},
     ]
 
+    TEST_ONTOLOGIES = [
+        {"label": "fixity", "id": "info:bnf/spar/fixity#",
+         "title": "Ontologie de fixité"},
+        {"label": "provenance", "id": "info:bnf/spar/provenance#",
+         "title": "Ontologie de provenance"},
+        {"label": "structure", "id": "info:bnf/spar/structure#",
+         "title": "Ontologie de structure"},
+    ]
+
     TEST_FORMATS = [
         {"label": "jpeg", "id": "ark:/12148/br2",
          "title": "Format JPEG", "desc": "image/jpeg"},
@@ -88,10 +99,30 @@ class ReferenceData(Singleton):
 
     def __init__(self, platform):
         self.platform = platform
+        self.ref_date = None
         self.values = {}
 
     def __str__(self):
         return self.platform + " [" + len(self.values) + "]"
+
+    def get_ref_date(self):
+        if self.ref_date:
+            return self.ref_date
+
+        if self.platform == "TEST":
+            self.ref_date = ReferenceData.TEST_REF_DATE
+        else:
+            query = """
+                SELECT ?date WHERE {
+                  GRAPH ?g {
+                  <info:bnf/spar/agent/4c466380-0752-11e8-9ede-0001a4ab1504>
+                      a sparagent:softwareAgent;
+                      <http://purl.org/dc/terms/modified> ?date.
+                  }
+                } LIMIT 1"""
+            results = simple_query(query)
+            self.ref_date = results.get("results").get("bindings").get("date").get("value")
+        return self.ref_date
 
     def get_data(self, kind):
         if kind not in ReferenceData.KINDS:
@@ -111,6 +142,8 @@ class ReferenceData(Singleton):
                 return ReferenceData.TEST_TYPES
             elif kind == "event":
                 return ReferenceData.TEST_EVENTS
+            elif kind == "ontology":
+                return ReferenceData.TEST_ONTOLOGIES
             elif kind.endswith("Format"):
                 return ReferenceData.TEST_FORMATS
             elif kind.endswith("Tool"):
@@ -145,6 +178,15 @@ class ReferenceData(Singleton):
                   FILTER (lang(?title) = 'fr')
                   FILTER (lang(?desc) = 'fr')
                 } ORDER BY ?id LIMIT 1000"""
+        elif kind == "ontology":
+            query = """
+                SELECT (STRBEFORE(STRAFTER(STR(?id), 'spar/'), '#') AS ?label) ?id ?title ?desc
+                WHERE {
+                  ?id a owl:ontology.
+                  ?id dc:title ?title.
+                  OPTIONAL { ?id dc:description ?desc. }
+                  FILTER (lang(?title) = 'fr')
+                } ORDER BY ?uri LIMIT 100"""
         elif kind.endswith("Format"):
             query = """
                 SELECT (STRAFTER(STR(?uri), 'representation/') AS ?label) ?id

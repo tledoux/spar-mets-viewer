@@ -3,6 +3,7 @@
     <link rel="stylesheet" href="/static/css/bootstrap-select-1.13.1.min.css">
 {% endblock %}
 {% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/myCommons.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap-select-1.13.1.min.js"></script>
 {%endblock%}
 {% block content %}
@@ -56,6 +57,7 @@
   </div>
 
   <script>
+    var units = ['{{ _("bytes") }}', '{{ _("KB") }}', '{{ _("MB") }}', '{{ _("GB") }}', '{{ _("TB") }}']
     var $table = $("#table")
     var $button = $("#btnSubmit")
     $(function () {
@@ -64,22 +66,6 @@
             //$table.bootstrapTable('load', exec());
         });
     });
-    
-    function numberFormatter(value) {
-      return String(value).replace(/(.)(?=(\d{3})+$)/g,'$1 ');
-    }
-
-    function sizeFormatter(value) {
-      var units = ['{{ _("bytes") }}', '{{ _("KB") }}', '{{ _("MB") }}', '{{ _("GB") }}', '{{ _("TB") }}']
-      if (value == 0) return '0';
-      var i = parseInt(Math.floor(Math.log(value) / Math.log(1000)));
-      var r = (value / Math.pow(1000, i));
-      if (r >= 99.995 ||  i == 0) {
-        return r.toFixed(0) + ' ' + units[i];
-      } else {
-        return r.toFixed(2) + ' ' + units[i];
-      }
-    }
     
     function initTable() {
         $table.bootstrapTable({
@@ -115,12 +101,6 @@
                 ],
         })
     };
-    function showError(msg) {
-        $("#msgerr").text(msg)
-        $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
-          $("#alertMsg").slideUp(500);
-        });
-    }
     function exec() {
       var endpoint = "/query"
       // Retrieve the fields

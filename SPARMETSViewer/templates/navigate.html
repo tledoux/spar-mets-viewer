@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block stylesheet %}
+    <link rel="stylesheet" href="/static/css/vis-network.min.css">
+    <style type="text/css">
+    #network {
+      // width: 1000px;
+      height: 400px;
+      border: 1px solid lightgray;
+    }
+    .result.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1050;
+      width: 100%!important;
+      background: #FFF;
+    }
+    </style>
+{% endblock %}
+{% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/myCommons.js"></script>
+    <script type="text/javascript" src="/static/js/vis.min.js"></script>
+{%endblock%}
+{% block content %}
+  <div class="alert alert-danger" id="alertMsg">
+    <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
+  </div>
+
+  <div class="card mt-2">
+  <p class="card-subtitle mx-2 my-1">
+  {{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}
+  </p>
+  <div class="form-group mx-1 my-1">
+    <div class="row mx-1 my-1">
+      <label for="ark" class="control-label col-md-2">{{ _('URI') }}</label>
+      <div class="input-group col-md-10">
+        <input type="text" class="form-control form-control-sm" name="uri" id="uri" aria-describedby="uri-addon" placeholder="ark:/12148/bpt6k206840w" value="{{ uri or "" }}" />
+      </div>
+    </div>
+  </div>
+  </div>
+  <hr class="mx-2 my-2" />
+  <div id="result" class="graph">
+  <div id="toolbar"><div class="row">
+  <div class="col-md-1"><button class="btn btn-info" id="btnToggle"><span class="fa fa-arrows-alt"></span></button></div><div class="col-md-11"><small><span id="msg">Le graphe ci-dessous a été simplifié pour améliorer la lisibilité (toutes les énumérations en XXX ont été réduites à un seul noeud). Vous pouvez interagir avec le graphe en zoomant ou en le déplaçant.</span></small></div>
+  </div></div>
+  <div id="network"></div>
+  </div>
+<!-- 
+    color: "#c47c48"  set, group
+    color: "#ce3c41" metadata
+    color: "#bf3fc8" object
+    color:"#8cc43d" file
+-->
+  <script type="text/javascript">
+    // create an array with nodes
+    var nodes = new vis.DataSet([
+      {id: 1, label: 'Choose a URI', color: '#ce3c41'},
+    ]);
+
+    // create an array with edges
+    var edges = new vis.DataSet([
+    ]);
+
+    // create a network
+    var container = document.getElementById('network');
+    var data = {
+      nodes: nodes,
+      edges: edges
+    };
+    var options = {
+      groups: { 
+        textGroup: { color:'#ce3c41', shape:'ellipse' },
+        structureGroup: { color:'#c47c48'},
+      },
+      layout: {
+        hierarchical: {
+          enabled:false, //true,
+          levelSeparation: 400,
+          nodeSpacing: 400,
+          direction: 'UD', // UD, DU, LR, RL
+          sortMethod: 'hubsize', // hubsize, directed
+          edgeMinimization: false,
+        }
+      },
+      physics: {
+        enabled: true,
+        barnesHut: {
+          gravitationalConstant: -700, // -2000
+          centralGravity: 0.3, // 0.3
+          springLength:200, // 95
+          springConstant:0.04, //0.04
+          avoidOverlap:0.6, // 0
+        }
+      },
+      nodes: { shape:'box'}
+    };
+    var network = new vis.Network(container, data, options);
+    
+  </script>
+  <script>
+    
+  </script>
+  <script>
+    var $button = $("#btnSubmit")
+    var $uri = $("#uri")
+    var uri
+    var uriNodeId
+
+    // React to double click
+    network.on("doubleClick", function (params) {
+      var nodeId = params.nodes[0];
+      var selectedUri = network.body.data.nodes.get(nodeId).uri
+      if (selectedUri != undefined && selectedUri != uri) {
+        document.location.href = '/navigate?uri=' + encodeURIComponent(selectedUri)
+      }
+      
+    });
+    // Calculate the graph
+    function updateGraph() {
+      // Download the graph corresponding to the ark
+      uri = $uri.val()
+      if (uri == "") {
+        // Display an error
+        showError("{{ _('Give an URI to navigate.') }}");
+        return;
+      }
+      //alert(uri)
+      var oldMsg = $("#msg").text()
+      $("#msg").text("{{ _('Loading...') }}")
+      // Retrieve the triples related to the uri
+      url = '/uri?uri=' + encodeURIComponent(uri)
+      $.getJSON(url, function(data) {
+        var nodes = {}
+        var edges = {}
+        var edgesGraph = []
+        var nodesGraph = []
+        var nbNodes = 0
+        var triples = data.results.bindings
+        // console.log("triples begin " + JSON.stringify(triples))
+        triples.forEach( function(triple) {
+          if (nbNodes > 300) return;
+          if (nbNodes % 10 == 0) console.log(nbNodes)
+          var s = triple.s.value
+          var p = triple.p.value
+          var o = triple.o.value
+          var uri_s = s, uri_p = p, uri_o = o
+          
+          if (triple.s.type == 'uri') {
+            s = translateNs(s)
+          }
+          var node_s, node_o
+          if (s in nodes) {
+            node_s = nodes[s]
+          } else {
+            nbNodes++
+            node_s = { id:nbNodes, label:s, font: { multi: true }, uri: uri_s }
+            if (uri_s == uri) {
+                uriNodeId = node_s.id
+                node_s.mass = 5
+                node_s.fixed = { x: true, y : true }
+                node_s.color = "#bf3fc8"
+            }
+            nodesGraph.push(node_s)
+            nodes[s] = node_s
+          }
+          p = translateNs(p)
+          // Case of a link (give the type of the source node)
+          if (p == "a") {
+            if (o.startsWith("sparstructure") && uri_s != uri) {
+              node_s.group = "structureGroup"
+              node_s.mass = 3
+            }
+          }
+          if (triple.o.type == 'uri' || triple.o.type == 'bnode') {
+            o = translateNs(o)
+            if (o in nodes) {
+              node_o = nodes[o]
+            } else {
+              nbNodes++
+              node_o = { id:nbNodes, label:o, font: { multi: true }, uri:uri_o }
+              nodesGraph.push(node_o)
+              nodes[o] = node_o
+            }
+            // target is uri
+            edgeHash = "" + node_s.id + "-" + p + "->" + node_o.id
+            if (edgeHash in edges) {
+              width = edgeHash.width
+              if (width == undefined)
+                width = 2
+              else if (width < 5)
+                width++
+              else 
+                width = 5
+              edgeHash.width = 5
+            } else {
+              edge = { from: node_s.id, to: node_o.id, arrows: 'to', label: p }
+              edges[edgeHash] = edge
+              edgesGraph.push(edge)
+            }
+          } else {
+            // target is literal always create a new node
+            nbNodes++
+            if (o.length <= 20) {
+              node_o = { id:nbNodes, label:o, group:"textGroup"}
+            } else {
+              node_o = { id:nbNodes, label:o.substring(0,20) + "…", title:o, group:"textGroup"}
+            }
+            nodesGraph.push(node_o)
+            
+            edgeHash = "" + node_s.id + "-" + p + "->" + node_o.id
+            edge = {from: node_s.id, to: node_o.id, arrows: 'to', label: p}
+            edges[edgeHash] = edge
+            edgesGraph.push(edge)
+            
+          }
+        });
+        console.log("Found ", nbNodes, " nodes and ", edgesGraph.length, " edges");
+        var data = { nodes:new vis.DataSet(nodesGraph), edges:new vis.DataSet(edgesGraph) }
+        network.stopSimulation()
+        network.setData(data)
+        network.startSimulation()
+        $("#msg").text(oldMsg)
+      });
+    }
+
+    // onReady function
+    $(function () {
+      activeNavItem('explore');
+      $("#alertMsg").hide();
+      // Load the graph directly if an URI is provided in the calling URL
+      if ($uri.val() != undefined) {
+        updateGraph();
+      }
+
+      // Try to redraw in a radial (or circular) layout
+      network.on('initRedraw', function() {
+        var radius = $("#network").height() / 2
+        var ids = network.body.data.nodes.getIds()
+        var d = 2 * Math.PI / ids.length
+        ids.forEach(function(id, i) {
+          if (id == uriNodeId) return
+          var x = radius * Math.cos(d * i)
+          var y = radius * Math.sin(d * i)
+          network.moveNode(id, x, y)
+        })
+      })
+      // Hanlde Enter
+      $uri.keypress(function(event){
+        var keycode=(event.keyCode ? event.keyCode:event.which)
+        if (keycode == '13') {
+          updateGraph();
+        }
+      });
+
+      $("#btnToggle").click(function() {
+        wHeight = $( window ).height()
+        $('.graph').toggleClass('fullscreen')
+        if ($('.graph').hasClass('fullscreen')) {
+          $("#network").height(wHeight - 50)
+        } else {
+          $("#network").height(400)
+        }
+      });
+      
+    });
+
+</script>
+{% endblock %}
+
+

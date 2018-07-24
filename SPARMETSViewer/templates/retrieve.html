@@ -3,11 +3,15 @@
     <link rel="stylesheet" href="/static/css/bootstrap-select-1.13.1.min.css">
 {% endblock %}
 {% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/myCommons.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap-select-1.13.1.min.js"></script>
     <script type="text/javascript" src="/static/js/defaults-en_US-1.13.1.min.js"></script>
     <script type="text/javascript" src="/static/js/defaults-fr_FR-1.13.1.min.js"></script>
 {%endblock%}
 {% block content %}
+  <div class="alert alert-danger" id="alertMsg">
+    <strong>{{ _('Error:') }}</strong> <span id="msgerr"></span>
+  </div>
   <div class="card mt-2">
   <p class="card-subtitle mx-2 my-1">
   {{ _('Fill in the fields to retrieve information on the platform %(platform)s.', platform=access_platform) }}
@@ -69,7 +73,7 @@
         data-response-handler="queryResponseHandler"
   >
   </table>
-  <br/><br />
+  <br /><br />
   </div>
 
   <script>
@@ -80,26 +84,28 @@
     var $displayColumns = $("#displayColumns")
     var $selectChannel = $("#channel")
 
-    function getCurrentYearMonth() {
-      function pad(num) {
-        if (num < 10) { return '0' + num; } else { return num; }
-      }
-      var d = new Date();
-      return d.getFullYear() + '-' + pad(d.getMonth() + 1);
-    }
-
     // onReady function
     $(function () {
         $button.click(function () {
+            // Test channel
+            if ($selectChannel.val() == '') {
+              showError("{{ _('Select a channel') }}");
+              return
+            }
             if (columnsChanged) {
               // Call refreshOptions to change the columns
+              console.log("refreshOptions")
               $table.bootstrapTable('refreshOptions', {
                   //exportOptions: { ignoreColumn: [3] },
                   columns: calculateColumns()
               })
               columnsChanged = false
             }
-            $table.bootstrapTable('refresh', { pageNumber: 1 })
+            $button.attr("disabled", "disabled")
+              console.log("showLoading")
+            $table.bootstrapTable('showLoading')
+              console.log("refresh")
+            //$table.bootstrapTable('refresh', { pageNumber: 1 })
         });
 
         // Monitor modification in display columns
@@ -115,6 +121,8 @@
           fullTotal = undefined
         });
 
+        activeNavItem('retrieve');
+        $("#alertMsg").hide();
         // Initialize the fields
         $("#period").val(getCurrentYearMonth())
         // Initialize the table
@@ -128,7 +136,6 @@
       params.filter = {}
       params.filter.channel = $("#channel").val()
       if (params.filter.channel == '') {
-        // $("#channel").addClass('btn-danger')
         return false
       }
 
@@ -145,14 +152,13 @@
       }
 
       console.log("queryParams end " + JSON.stringify(params))
-      $button.attr("disabled", "disabled")
-      $table.bootstrapTable('showLoading')
       return params
     }
     // Handle the response from the server
     function queryResponseHandler(res) {
       console.log("queryResponseHandler begin " + JSON.stringify(res))
       $button.attr("disabled", null)
+              console.log("hideLoading")
       $table.bootstrapTable('hideLoading')
       fullTotal = res.total
       return res;

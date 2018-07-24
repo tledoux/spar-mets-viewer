@@ -15,6 +15,7 @@ from .models import METS
 from .parsemets import METSFile
 from .referencedata import ReferenceData
 from .rdfquery import label_query, from_sparql_results_to_json
+from .sru import SRU
 
 
 @babel.localeselector
@@ -47,6 +48,16 @@ def allowed_file(filename):
     """Return the files with allowed extensions"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+def last_modified_date():
+    """Return the files with allowed extensions"""
+    ref_data = ReferenceData(app.config['ACCESS_PLATFORM'])
+    last_date = ref_data.get_ref_date()
+    if not last_date:
+        return ""
+    else:
+        return last_date[:10]
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -246,6 +257,42 @@ def custom_query_json():
     return jsonify(from_sparql_results_to_json(results, withCounts=True, count=total))
 
 
+@app.route("/uri", methods=['GET', 'POST'])
+def get_uri():
+    """Retrieve the nodes directly linked to a uri"""
+    if request.method == 'POST':
+        uri = request.form.get("uri")
+    else:
+        uri = request.args.get("uri")
+    if uri is None:
+        resp = Response("No uri", status=codes.bad_request, mimetype="text/plain")
+        return resp
+    app.logger.debug("Get nodes from %s", uri)
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+    endpoint = app.config['ACCESS_ENDPOINT']
+    if platform == 'TEST':
+        endpoint = app.config['NODES_TESTFILE']
+    query = """SELECT DISTINCT ?s ?p ?o WHERE {
+          ?s ?p ?o.
+          VALUES ?s {<%s>}
+        }""" % uri
+    app.logger.debug("Get uri endpoint %s", endpoint)
+
+    response = get(
+        endpoint,
+        headers={'Accept': 'application/sparql-results+json'},
+        params={'query': query, 'format': 'application/sparql-results+json'})
+    app.logger.debug("Get graph response %s", response.status_code)
+    if response.status_code != codes.ok:
+        resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
+        return resp
+    results = response.json()
+    # app.logger.debug("THL JSON response %s", results)
+    return jsonify(results)
+
+
 @app.route("/graph", methods=['GET', 'POST'])
 def get_graph():
     """Retrieve the full graph for a given ark"""
@@ -338,6 +385,25 @@ def sparql_query():
     return response.content
 
 
+@app.route("/sru", methods=['GET', 'POST'])
+def query_sru():
+    """Access to the SRU endpoint"""
+    # platform = app.config['ACCESS_PLATFORM']
+    endpoint = SRU()
+    response = endpoint.search('bib.ark any "ark:/12148/cb316013536"')
+    records = []
+    for r in response.records:
+        record = {}
+        app.logger.debug("Date: %s" % r.dates)
+        record['date'] = r.dates[0]
+        app.logger.debug("Title: %s" % r.titles)
+        record['title'] = r.titles[0]
+        app.logger.debug("Author: %s" % r.creators[0])
+        record['creator'] = r.creators[0]
+        records.append(record)
+    return jsonify(records)
+
+
 @app.route("/compute", methods=['GET', 'POST'])
 def compute_md5():
     """Access to the md5 computation"""
@@ -352,7 +418,8 @@ def reference_info():
     return render_template(
         'reference.html',
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=app.config['ACCESS_PLATFORM'])
+        access_platform=app.config['ACCESS_PLATFORM'],
+        last_date=last_modified_date())
 
 
 @app.route("/search", methods=['GET', 'POST'])
@@ -365,7 +432,8 @@ def search_ark():
         'search.html',
         channels=channels,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=platform)
+        access_platform=platform,
+        last_date=last_modified_date())
 
 
 @app.route("/report", methods=['GET', 'POST'])
@@ -379,7 +447,8 @@ def report():
         'report.html',
         channels=channels,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=platform)
+        access_platform=platform,
+        last_date=last_modified_date())
 
 
 @app.route("/retrieve", methods=['GET', 'POST'])
@@ -393,7 +462,8 @@ def retrieve():
         'retrieve.html',
         channels=channels,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=platform)
+        access_platform=platform,
+        last_date=last_modified_date())
 
 
 @app.route("/explore", methods=['GET', 'POST'])
@@ -409,7 +479,25 @@ def explore():
         'explore.html',
         ark=ark,
         ark_prefix=app.config['ARK_PREFIX'],
-        access_platform=app.config['ACCESS_PLATFORM'])
+        access_platform=app.config['ACCESS_PLATFORM'],
+        last_date=last_modified_date())
+
+
+@app.route("/navigate", methods=['GET', 'POST'])
+def navigate():
+    """Access to navigate the graph"""
+    uri = None
+    if request.method == 'POST':
+        uri = request.form.get("uri")
+    elif request.method == 'GET':
+        uri = request.args.get("uri")
+
+    return render_template(
+        'navigate.html',
+        uri=uri,
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=app.config['ACCESS_PLATFORM'],
+        last_date=last_modified_date())
 
 
 @app.route('/uploadsuccess', methods=['GET', 'POST'])

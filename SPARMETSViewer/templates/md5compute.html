@@ -23,6 +23,7 @@
   </style>
 {% endblock %}
 {% block javascriptlib %}
+  <script type="text/javascript" src="/static/js/myCommons.js"></script>
   <script type="text/javascript" src="/static/js/spark-md5.min.js"></script>
 {%endblock%}
 {% block content %}
@@ -33,7 +34,7 @@
   <h3>{{ _('Compute the MD5 HASH') }}</h3>
   <p>{{ _('Select a file from your computer') }}</p>
   </div>
-  <!--<h3>with <a target="_blank" href="//github.com/satazor/SparkMD5">SparkMD5</a></h3>-->
+  {# <!--<h3>with <a target="_blank" href="//github.com/satazor/SparkMD5">SparkMD5</a></h3>--> #}
 
   <form action="" method="post" enctype="multipart/form-data" id="js-upload-form">
     <div class="form-inline">
@@ -80,12 +81,6 @@
         activeNavItem('compute');
         $("#alertMsg").hide();
     });
-    function showError(msg) {
-        $("#msgerr").text(msg)
-        $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
-          $("#alertMsg").slideUp(500);
-        });
-    }
 
     var $dropZone = $("#drop-zone");
     var $uploadFiles = $("#js-upload-files");
@@ -165,8 +160,7 @@
       };
       // Update the info inputboxes
       $("#filename").val(file.name);
-      fileSize = file.size.toString().replace(/\B(?=(?:\d{3})+(?!\d))/g, ' ');
-      $("#filesize").val(fileSize);
+      $("#filesize").val(numberFormatter(file.size));
       // Begin the upload and the comptutation
       loadNext();
     }
