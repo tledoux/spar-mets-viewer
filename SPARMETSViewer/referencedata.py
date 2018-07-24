@@ -121,7 +121,7 @@ class ReferenceData(Singleton):
                   }
                 } LIMIT 1"""
             results = simple_query(query)
-            self.ref_date = results.get("results").get("bindings").get("date").get("value")
+            self.ref_date = results.get("results").get("bindings")[0].get("date").get("value")
         return self.ref_date
 
     def get_data(self, kind):
@@ -182,11 +182,11 @@ class ReferenceData(Singleton):
             query = """
                 SELECT (STRBEFORE(STRAFTER(STR(?id), 'spar/'), '#') AS ?label) ?id ?title ?desc
                 WHERE {
-                  ?id a owl:ontology.
+                  ?id a owl:Ontology.
                   ?id dc:title ?title.
                   OPTIONAL { ?id dc:description ?desc. }
                   FILTER (lang(?title) = 'fr')
-                } ORDER BY ?uri LIMIT 100"""
+                } ORDER BY ?id LIMIT 100"""
         elif kind.endswith("Format"):
             query = """
                 SELECT (STRAFTER(STR(?uri), 'representation/') AS ?label) ?id
