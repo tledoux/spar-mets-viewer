@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """How to parse a METS file."""
 
-import json
 import os
 import sys
 

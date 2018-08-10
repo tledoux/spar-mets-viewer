@@ -17,15 +17,27 @@
 </div>
 <div class="collapse show" id="descMetaDiv">
 <div class="card-body">
-  {% for element in dcmetadata %}
-  {% if element['element'] %}
+  {%- for element in dcmetadata -%}
+  {%- if element['element'] -%}
   {% if element['element'] == 'channel identifier' %}
     <p><strong>{{ gettext(element['element'])|title + ':'}}</strong> <span class="rdfTooltip" data-toggle="tooltip">{{ element['value']|safe }}</span></p>
+  {% elif element['element'] == 'relation' %}
+    <p><strong>{{ gettext(element['element'])|title + ':'}}</strong> {{ element['value']|safe }}
+    {%- if "ark:/12148/cb" in element['value'] -%}
+<span title="Notice OAI" data-html="true" data-poload="/bibrecord?value={{ element['value'] }}">&nbsp;<img src="/static/img/catgen.png" height="24" /></span></p>
+    {%- elif "ark:/12148/cc" in element['value'] -%}
+<span title="Notice EAD" data-html="true" data-poload="/bibrecord?value={{ element['value'] }}">&nbsp;<img src="/static/img/bam.png" height="24" /></span></p>
+    {%- endif -%}
+  {% elif element['element'] == 'ark identifier' %}
+    <p><strong>{{ gettext(element['element'])|title + ':'}}</strong> {{ element['value']|safe }}
+    {%- if "ark:/12148/b" in element['value'] -%}
+<span title="Notice Gallica" data-html="true" data-poload="/bibrecord?value={{ element['value'] }}">&nbsp;<img src="/static/img/gallica.ico" height="24" /></span></p>
+    {%- endif -%}
   {% else %}
     <p><strong>{{ gettext(element['element'])|title }}{% if element['qualifier'] %} ({{ element['qualifier'] }}){% endif %} :</strong> {{ element['value']|safe }}</p>
   {% endif %}
-  {% endif %}
-  {% endfor %}
+  {%- endif -%}
+  {%- endfor -%}
 </div>
 </div>
 </div>
@@ -310,6 +322,19 @@ this.options.icons.toggle
     highlightSelected: false,
     
   })
+
+  // See https://stackoverflow.com/questions/8130069/load-a-bootstrap-popover-content-with-ajax-is-this-possible
+  $('*[data-poload]').hover(
+    function() {
+      var e = $(this);
+      // e.off('hover'); // to avoid reloading
+      $.get(e.data('poload'), function(d) {
+          e.popover({ content: d }).popover('show');
+      });
+    }, function() { 
+      $(this).popover( 'hide' ) 
+    }
+  );
 
   // Enhance the visualisation
   substituteRdfLabel();

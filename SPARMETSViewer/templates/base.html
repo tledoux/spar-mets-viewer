@@ -62,8 +62,13 @@
       <a class="nav-link mv-explore" href="/navigate">{{ _('Exploration') }}</a>
     </li>
     {% if access_platform and access_platform=='TEST' %}
-    <li class="nav-item">
-      <a class="nav-link mv-retrieve" href="/retrieve">{{ _('Retrieve') }}</a>
+    <li class="nav-item nav-text dropdown">
+      <a class="nav-link dropdown-toggle mv-retrieve" href="#" id="navbarSearchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ _('Retrieve') }}</a>
+      <div class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
+        <span class="dropdown-item"><a href="/retrieve">{{ _('SPAR Repository') }}</a></span>
+        <span class="dropdown-item"><a href="/catalogsearch">{{ _('SRU Catalog') }}</a></span>
+        <span class="dropdown-item"><a href="/gallicasearch">{{ _('SRU Gallica') }}</a></span>
+      </div>
     </li>
     {% endif %}
     <li class="nav-item">

@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-"""How to query with SRU."""
+"""How to query with SRU in Unimarc."""
 
 import sys
 
 from lxml import etree
 from requests import get, codes
-# from urllib.parse import quote
-
-# from .identifiers import convert_size, extract_date, add_naan
 
 
 # Dictionnary of XML prefixes and their namespaces
@@ -22,6 +19,7 @@ NAMESPACES = {
     'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/',
     'srw': 'http://www.loc.gov/zing/srw/',
     'ixm': 'http://catalogue.bnf.fr/namespaces/InterXMarc',
+    'mxc': 'info:lc/xmlns/marcxchange-v2',
     'mn': 'http://catalogue.bnf.fr/namespaces/motsnotices',
     'sd': 'http://www.loc.gov/zing/srw/diagnostic/',
 }
@@ -29,12 +27,16 @@ NAMESPACES = {
 
 class SRUResponse():
     """
-    Class handling a SRU response
+    Class handling a SRU response in UniXMarc
     """
 
     def __init__(self, record_data, sru):
         self.record_data = record_data
         self.sru = sru
+
+    def xpathfor(tag, code):
+        prefix = ".//srw:record/srw:recordData/mxc:record/"
+        return prefix + "mxc:datafield[@tag='%s']/mxc:subfield[@code='%s']" % (tag, code)
 
     @property
     def records(self):
@@ -46,83 +48,60 @@ class SRUResponse():
         return(SRURecord(record_data, self.sru))
 
     @property
+    def urls(self):
+        xpath = self.xpathfor('856', 'u')
+        baseurl = 'http://gallica.bnf.fr/'
+        result = [r.text.replace(baseurl, '')
+                  for r in self.record_data.xpath(xpath, namespaces=NAMESPACES)]
+        return result
+
+    @property
     def identifiers(self):
-        baseurl1 = 'http://catalogue.bnf.fr/'
-        baseurl2 = 'https://catalogue.bnf.fr/'
-        baseurl3 = 'https://gallica.bnf.fr/'
-        result = [r.text.replace(baseurl1, '').replace(baseurl2, '').replace(baseurl3, '').strip()
-                  for r in self.record_data.iter() if
-                  r.tag.endswith('identifier') and r.text.find(':') > -1]
-        return result
-
-    @property
-    def relations(self):
-        basestring = 'Notice du catalogue : http://catalogue.bnf.fr/'
-        result = [r.text.replace(basestring, '').strip() for r in self.record_data.iter() if
-                  r.tag.endswith('relation') and r.text.startswith("Notice du catalogue")]
-        return result
-
-    @property
-    def description_sets(self):
-        basestring = 'Appartient à l’ensemble documentaire : '
-        result = [r.text.replace(basestring, '') for r in self.record_data.iter() if
-                  r.tag.endswith('description') and r.text.startswith("Appartient à l’ensemble")]
-        return result
-
-    @property
-    def types(self):
-        # dc_type = elem.get('{http://www.w3.org/2001/XMLSchema-instance}type')
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('type')
-                and 'fre' == r.get('{http://www.w3.org/XML/1998/namespace}lang')]
-
-    @property
-    def languages(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('language')]
+        return [r.text
+                for r in self.record_data.xpath(".//srw:record/srw:recordIdentifier",
+                                                namespaces=NAMESPACES)]
 
     @property
     def dates(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('date')]
+        xpath = self.xpathfor('210', 'd')
+        return [r.text for r in self.record_data.xpath(xpath, namespaces=NAMESPACES)]
 
     @property
-    def extents(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('extent')]
+    def callnumbers(self):
+        xpath = self.xpathfor('930', 'a')
+        return [r.text for r in self.record_data.xpath(xpath, namespaces=NAMESPACES)]
 
     @property
     def creators(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('creator')]
-
-    @property
-    def contributors(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('contributor')]
-
-    # TODO: distinguish by xsi:type and xml:lang
-    @property
-    def subjects(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('subject')]
+        xpathCreator = ".//srw:recordData/mxc:record/mxc:datafield[@tag='700' or @tag='702']"
+        xpathNom = "./mxc:subfield[@code='a']/text()"
+        xpathPrenom = "./mxc:subfield[@code='b']/text()"
+        xpathDates = "./mxc:subfield[@code='f']/text()"
+        xpathFonction = "./mxc:subfield[@code='4']/text()"
+        r = []
+        for el in self.record_data.xpath(xpathCreator, namespaces=NAMESPACES):
+            nom = el.xpath(xpathNom, namespaces=NAMESPACES)
+            prenom = el.xpath(xpathPrenom, namespaces=NAMESPACES)
+            dates = el.xpath(xpathDates, namespaces=NAMESPACES)
+            r.append(", ".join(nom + prenom + dates))
+        return r
 
     @property
     def titles(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('title')]
+        xpath = self.xpathfor('200', 'a')
+        return [r.text for r in self.record_data.xpath(xpath, namespaces=NAMESPACES)]
 
     @property
     def publishers(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('publisher')]
-
-    # Following properties occur in GGC
-
-    @property
-    def annotations(self):
-        return [r.text for r in self.record_data.iter() if
-                r.tag.endswith('annotation')]
+        xpathPublisher = ".//srw:recordData/mxc:record/mxc:datafield[@tag='210']"
+        xpathName = "./mxc:subfield[@code='c']/text()"
+        xpathLieu = "./mxc:subfield[@code='a']/text()"
+        r = []
+        for el in self.record_data.xpath(xpathPublisher, namespaces=NAMESPACES):
+            name = el.xpath(xpathName, namespaces=NAMESPACES)
+            lieu = el.xpath(xpathLieu, namespaces=NAMESPACES)
+            r.append(", ".join(name + lieu))
+        return r
 
 
 class SRURecord():
@@ -149,13 +128,12 @@ class SRURecord():
         return self.__next__()
 
 
-class SRU():
+class SRUUnimarc():
     """ Class to query a SRU endpoint"""
 
     DEBUG = True
 
     CATALOG_ENDPOINT = "http://catalogue.bnf.fr/api"
-    GALLICA_ENDPOINT = "https://gallica.bnf.fr"
 
     maximumrecords = 50
     num_records = 0
@@ -166,13 +144,11 @@ class SRU():
     def __init__(self, kind="catalogue"):
         if kind == "catalogue":
             self.endpoint = self.CATALOG_ENDPOINT
-        elif kind == "gallica":
-            self.endpoint = self.GALLICA_ENDPOINT
         else:
             raise ValueError(kind)
 
     def search(self, query, startrecord=1, maximumrecords=1,
-               recordschema='dublincore'):
+               recordschema='unimarcXchange'):
         self.maximumrecords = maximumrecords
         self.query = query
         self.startrecord = startrecord
@@ -182,7 +158,8 @@ class SRU():
 
         num_records = record_data.xpath(
             "/srw:searchRetrieveResponse/srw:numberOfRecords/text()", namespaces=NAMESPACES)
-        print("Num records %s" % num_records, file=sys.stderr)
+        if self.DEBUG:
+            print("Num records %s" % num_records, file=sys.stderr)
         self.num_records = int(num_records[0])
         if self.num_records > 0:
             return SRUResponse(record_data, self)
@@ -195,7 +172,6 @@ class SRU():
         if self.DEBUG:
             print('run_query: [%s], query: [%s]' % (endpoint, self.query), file=sys.stderr)
 
-        #    headers={'Accept': 'application/sparql-results+json'},
         r = get(
             endpoint,
             params={

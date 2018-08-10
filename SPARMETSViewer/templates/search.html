@@ -4,6 +4,7 @@
     <link rel="stylesheet" href="/static/css/bootstrap-select-1.13.1.min.css">
 {% endblock %}
 {% block javascriptlib %}
+    <script type="text/javascript" src="/static/js/myCommons.js"></script>
     <script type="text/javascript" src="/static/js/bootstrap-select-1.13.1.min.js"></script>
 {%endblock%}
 {% block content %}
@@ -61,7 +62,8 @@
         data-show-columns="true"
         data-show-export="true"
         data-pagination="true"
-        data-only-info-pagination="true"
+        data-only-info-pagination="false"
+        data-page-size="50"
         data-pagination-v-align="both"
         data-locale="{{ _('en') }}"
         data-unique-id="ark"
@@ -73,12 +75,6 @@
   <script>
     var $table = $("#table")
     var $button = $("#btnSubmit")
-    function showError(msg) {
-        $("#msgerr").text(msg)
-        $("#alertMsg").fadeTo(2000, 500).slideUp(500, function() {
-          $("#alertMsg").slideUp(500);
-        });
-    }
 
     $(function () {
         activeNavItem('upload');

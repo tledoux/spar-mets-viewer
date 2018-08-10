@@ -1,0 +1,5 @@
+{%- for element in dcmetadata -%}
+{%- if element['element'] -%}
+  <strong>{{ gettext(element['element'])|title }}{% if element['qualifier'] %} ({{ element['qualifier'] }}){% endif %} :</strong> {{ element['value']|safe }}<br />
+{%- endif -%}
+{%- endfor -%}

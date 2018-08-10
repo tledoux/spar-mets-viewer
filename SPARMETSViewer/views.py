@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Definition of the routes for the application."""
 import os
+import re
 import time
 
 from flask import jsonify, request, render_template, Response
@@ -16,6 +17,8 @@ from .parsemets import METSFile
 from .referencedata import ReferenceData
 from .rdfquery import label_query, from_sparql_results_to_json
 from .sru import SRU
+from .srusimple import SRUSimple
+from .sruunimarc import SRUUnimarc
 
 
 @babel.localeselector
@@ -122,10 +125,6 @@ def reference_data_rest(kind):
 @app.route("/customquery", methods=['POST'])
 def custom_query_json():
     """Make a SPARQL query and get back a simple json for table"""
-    # if request.method == 'POST':
-    #    query = request.form.get("query")
-    # else:
-    #    query = request.args.get("query")
     if not request.is_json:
         resp = Response("No json parameters", status=codes.bad_request, mimetype="text/plain")
         return resp
@@ -138,13 +137,17 @@ def custom_query_json():
     channel = content['filter']['channel']
     app.logger.debug("THL QUERY with %s", channel)
     filter = ""
+    triples = ""
     if "period" in content['filter']:
         period = content['filter']['period']
         filter += "FILTER (STRSTARTS(STR(?ingest_date), '%s'))" % period
+    if "arkrecord" in content['filter']:
+        arkrecord = content['filter']['arkrecord']
+        triples += " ?p dc:relation <%s>. " % arkrecord
     limit = "OFFSET " + str(content['offset']) + " LIMIT " + str(content['limit'])
     columns = content['columns']
     head = "?ark "
-    triples = """?p sparprovenance:hasEvent ?e.
+    triples += """?p sparprovenance:hasEvent ?e.
         ?e a sparprovenance:ingestCompletion.
         ?e dc:date ?ingest_date. """
     optional = ""
@@ -210,9 +213,10 @@ def custom_query_json():
         %s
         %s
         } }""" % (channel, triples, filter)
+    app.logger.debug("THL QUERYCOUNT with %s", queryCount)
     if 'total' in content:
         total = int(content['total'])
-    elif platform == "TEST":  # long queries on TEST
+    elif platform == "TEST":
         total = 2
     else:
         response = get(
@@ -253,7 +257,6 @@ def custom_query_json():
         resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
         return resp
     results = response.json()
-    # app.logger.debug("THL JSON response %s", results)
     return jsonify(from_sparql_results_to_json(results, withCounts=True, count=total))
 
 
@@ -289,7 +292,6 @@ def get_uri():
         resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
         return resp
     results = response.json()
-    # app.logger.debug("THL JSON response %s", results)
     return jsonify(results)
 
 
@@ -328,7 +330,6 @@ def get_graph():
         resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
         return resp
     results = response.json()
-    # app.logger.debug("THL JSON response %s", results)
     return jsonify(results)
 
 
@@ -361,7 +362,6 @@ def query_json():
         resp = Response(response.data, status=response.status_code, mimetype=response.content_type)
         return resp
     results = response.json()
-    # app.logger.debug("THL JSON response %s", results)
     return jsonify(from_sparql_results_to_json(results))
 
 
@@ -385,11 +385,252 @@ def sparql_query():
     return response.content
 
 
+@app.route("/bibrecord", methods=['GET'])
+def bib_record():
+    """Access to the bib record in OAI"""
+    ark = request.args.get("value")
+    if not ark.startswith("ark:"):
+        ark = re.sub(r'<a[^>]+>(.+)<\/a>', r'\1', ark)
+    is_gallica = ark.startswith('ark:/12148/b')
+
+    app.logger.debug("BIBRECORD for %s", ark)
+    if is_gallica:
+        query = '(dc.identifier all "%s")' % ark
+        endpoint = SRUSimple("gallica")
+    else:
+        query = '(bib.ark all "%s")' % ark
+        endpoint = SRUSimple("catalogue")
+    response = endpoint.search(query)
+    record = endpoint.from_oai_to_array(response)
+    # return endpoint.from_dc_array_to_html(record)
+    return render_template('dcsummary.html', dcmetadata=record)
+
+
+@app.route("/srucatalogquery", methods=['POST'])
+def catalog_sru():
+    """Access to the SRU endpoint of the catalog"""
+    if not request.is_json:
+        resp = Response("No json parameters", status=codes.bad_request, mimetype="text/plain")
+        return resp
+    content = request.get_json()
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+
+    endpoint = SRUUnimarc()
+    # Build the query
+    doctype = content['filter']['doc_type']
+    query = '(bib.doctype any "%s") ' % doctype
+    app.logger.debug("THL SRU with %s", doctype)
+    if "arkrecord" in content['filter']:
+        # bib.ark all "ark:/12148/cb40096442t"
+        arkrecord = content['filter']['arkrecord']
+        query += ' and (bib.ark all "%s") ' % arkrecord
+    if "publication_date" in content['filter']:
+        pdates = content['filter']['publication_date'].split("-")
+        if len(pdates) == 2:
+            if pdates[0] and pdates[1]:
+                query += ' and (bib.publicationdate within "%s %s") ' % (pdates[0], pdates[1])
+            elif pdates[0]:
+                query += ' and (bib.publicationdate >= "%s") ' % pdates[0]
+            elif pdates[1]:
+                query += ' and (bib.publicationdate <= "%s") ' % pdates[1]
+        else:
+            query += ' and (bib.publicationdate all "%s") ' % pdates[0]
+    if "value1" in content['filter']:
+        value = content['filter']['value1']
+        field = content['filter']['field1']
+        if field == 'all':
+            query += ' and (bib.anywhere all "%s") ' % value
+        elif field == 'title':
+            query += ' and (bib.title all "%s") ' % value
+        elif field == 'creator':
+            query += ' and (bib.author all "%s") ' % value
+    if "value2" in content['filter']:
+        value = content['filter']['value2']
+        field = content['filter']['field2']
+        if field == 'all':
+            query += ' and (bib.anywhere all "%s") ' % value
+        elif field == 'title':
+            query += ' and (bib.title all "%s") ' % value
+        elif field == 'creator':
+            query += ' and (bib.author all "%s") ' % value
+    app.logger.debug("THL SRU Query %s", query)
+    startrecord = content['offset']
+    if startrecord:
+        startrecord = int(startrecord) + 1
+    else:
+        startrecord = 1
+    maximumrecords = content['limit']
+    if maximumrecords:
+        maximumrecords = int(maximumrecords)
+    else:
+        maximumrecords = 10
+    app.logger.debug("THL SRU limit %s of %s", startrecord, maximumrecords)
+    response = endpoint.search(query, startrecord=startrecord)
+
+    records = []
+    total = endpoint.num_records
+    app.logger.debug("THL SRU Num records %s", total)
+    if total == 0:
+        result = {}
+        result['total'] = total
+        result['rows'] = records
+        return jsonify(result)
+
+    # Find the columns and build the response
+    columns = content['columns']
+    count = 0
+    for r in response.records:
+        count = count + 1
+        record = {}
+        if "ark" in columns and r.identifiers:
+            app.logger.debug("Identifier : %s" % r.identifiers)
+            record['ark'] = " ; ".join(r.identifiers)
+        if "publication_date" in columns and r.dates:
+            app.logger.debug("Publication date: %s" % r.dates)
+            record['publication_date'] = r.dates[0]
+        if "title" in columns and r.titles:
+            app.logger.debug("Title: %s" % r.titles)
+            record['title'] = " ; ".join(r.titles)
+        if "creator" in columns and r.creators:
+            app.logger.debug("Creator: %s" % r.creators[0])
+            record['creator'] = " ; ".join(r.creators)
+        if "publisher" in columns and r.publishers:
+            app.logger.debug("Publisher: %s" % r.publishers[0])
+            record['publisher'] = r.publishers[0]
+        if "ark_doc" in columns and r.urls:
+            record['ark_doc'] = " ; ".join(r.urls)
+        if "call_no" in columns and r.callnumbers:
+            record['call_no'] = " ; ".join(r.callnumbers)
+        records.append(record)
+        if count >= maximumrecords:
+            break
+
+    result = {}
+    result['total'] = total
+    result['rows'] = records
+    return jsonify(result)
+
+
+@app.route("/srugallicaquery", methods=['POST'])
+def gallica_sru():
+    """Access to the SRU endpoint of the catalog"""
+    if not request.is_json:
+        resp = Response("No json parameters", status=codes.bad_request, mimetype="text/plain")
+        return resp
+    content = request.get_json()
+    platform = app.config['ACCESS_PLATFORM']
+    if platform is None:
+        return
+
+    endpoint = SRU("gallica")
+    # Build the query
+    doctype = content['filter']['doc_type']
+    query = '(dc.type any "%s") ' % doctype
+    app.logger.debug("THL SRU Gallica with %s", doctype)
+    if "arkrecord" in content['filter']:
+        # dc.relation all "ark:/12148/cb40096442t"
+        arkrecord = content['filter']['arkrecord']
+        query += ' and (dc.relation all "%s") ' % arkrecord
+    if "publication_date" in content['filter']:
+        pdates = content['filter']['publication_date'].split("-")
+        # or indexationdate
+        if len(pdates) == 2:
+            if pdates[0] and pdates[1]:
+                query += ' and (dc.date >= "%s") and (dc.date <= "%s") ' % (pdates[0], pdates[1])
+            elif pdates[0]:
+                query += ' and (dc.date >= "%s") ' % pdates[0]
+            elif pdates[1]:
+                query += ' and (dc.date <= "%s") ' % pdates[1]
+        else:
+            query += ' and (dc.date all "%s") ' % pdates[0]
+    if "value1" in content['filter']:
+        value = content['filter']['value1']
+        field = content['filter']['field1']
+        if field == 'all':
+            query += ' and (metadata all "%s") ' % value
+        elif field == 'title':
+            query += ' and (dc.title all "%s") ' % value
+        elif field == 'creator':
+            query += ' and (dc.creator all "%s") ' % value
+    if "value2" in content['filter']:
+        value = content['filter']['value2']
+        field = content['filter']['field2']
+        if field == 'all':
+            query += ' and (metadata all "%s") ' % value
+        elif field == 'title':
+            query += ' and (dc.title all "%s") ' % value
+        elif field == 'creator':
+            query += ' and (dc.creator all "%s") ' % value
+    # Add BnF provenance
+    query += ' and (provenance adj "bnf.fr") '
+
+    app.logger.debug("THL SRU Gallica Query %s", query)
+    startrecord = content['offset']
+    if startrecord:
+        startrecord = int(startrecord) + 1
+    else:
+        startrecord = 1
+    maximumrecords = content['limit']
+    if maximumrecords:
+        maximumrecords = int(maximumrecords)
+    else:
+        maximumrecords = 10
+    app.logger.debug("THL SRU limit %s of %s", startrecord, maximumrecords)
+    response = endpoint.search(query, startrecord=startrecord)
+
+    records = []
+    total = endpoint.num_records
+    app.logger.debug("THL SRU Num records %s", total)
+    if total == 0:
+        result = {}
+        result['total'] = total
+        result['rows'] = records
+        return jsonify(result)
+
+    # Find the columns and build the response
+    columns = content['columns']
+    count = 0
+    for r in response.records:
+        count = count + 1
+        record = {}
+        if "ark" in columns and r.identifiers:
+            app.logger.debug("Identifier : %s" % r.identifiers)
+            record['ark'] = " ; ".join(r.identifiers)
+        if "publication_date" in columns and r.dates:
+            app.logger.debug("Publication date: %s" % r.dates)
+            record['publication_date'] = r.dates[0]
+        if "title" in columns and r.titles:
+            app.logger.debug("Title: %s" % r.titles)
+            record['title'] = " ; ".join(r.titles)
+        if "creator" in columns and r.creators:
+            app.logger.debug("Creator: %s" % r.creators[0])
+            record['creator'] = " ; ".join(r.creators)
+        if "publisher" in columns and r.publishers:
+            app.logger.debug("Publisher: %s" % r.publishers[0])
+            record['publisher'] = r.publishers[0]
+        if "ark_record" in columns and r.relations:
+            record['ark_record'] = " ; ".join(r.relations)
+        if "set" in columns and r.description_sets:
+            record['set'] = " ; ".join(r.description_sets)
+        records.append(record)
+        if count >= maximumrecords:
+            break
+
+    result = {}
+    result['total'] = total
+    result['rows'] = records
+    return jsonify(result)
+
+
 @app.route("/sru", methods=['GET', 'POST'])
 def query_sru():
     """Access to the SRU endpoint"""
     # platform = app.config['ACCESS_PLATFORM']
     endpoint = SRU()
+    # Recherche par type bib.doctype all "b"
+    # bib.publicationdate all "YYYY"
     response = endpoint.search('bib.ark any "ark:/12148/cb316013536"')
     records = []
     for r in response.records:
@@ -446,6 +687,30 @@ def report():
     return render_template(
         'report.html',
         channels=channels,
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=platform,
+        last_date=last_modified_date())
+
+
+@app.route("/catalogsearch", methods=['GET', 'POST'])
+def catalog_search():
+    """Access to the ctalog search form"""
+    platform = app.config['ACCESS_PLATFORM']
+
+    return render_template(
+        'catalogsearch.html',
+        ark_prefix=app.config['ARK_PREFIX'],
+        access_platform=platform,
+        last_date=last_modified_date())
+
+
+@app.route("/gallicasearch", methods=['GET', 'POST'])
+def gallica_search():
+    """Access to the ctalog search form"""
+    platform = app.config['ACCESS_PLATFORM']
+
+    return render_template(
+        'gallicasearch.html',
         ark_prefix=app.config['ARK_PREFIX'],
         access_platform=platform,
         last_date=last_modified_date())

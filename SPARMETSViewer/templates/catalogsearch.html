@@ -14,21 +14,25 @@
   </div>
   <div class="card mt-2">
   <p class="card-subtitle mx-2 my-1">
-  <img src="/static/img/rdf_flyer.32.gif" height="24" /> {{ _('SPAR Repository search from %(platform)s platform.', platform=access_platform) }}
+    <img src="/static/img/catgen.png" height="24" /> {{ _('SRU search in the BnF main catalog.') }}
   </p>
   <div class="form-group my-1">
     <div class="row mx-1 my-1">
-      <label for="channel" class="control-label col-md-2">{{ _('Channel') }}</label>
-      <select id="channel" class="selectpicker show-tick form-control form-control-sm col-md-4">
-        <option value="" selected="selected"><i>{{ _('Select a channel') }}</i></option>
-        {% for channel in channels %}
-        <option value="{{ channel.id }}">{{ channel.label }}</option>
-        {% endfor %}
+      <label for="doctype" class="control-label col-md-2">{{ _('Type') }}</label>
+      <select id="doctype" class="selectpicker show-tick form-control form-control-sm col-md-4">
+        <option value="" selected="selected"><i>{{ _('Select a type') }}</i></option>
+        <option value="a">Texte imprimé et livre numérique</option>
+        <option value="c">Musique notée</option>
+        <option value="i">Document iconographique</option>
+        <option value="e">Document cartographique</option>
+        <option value="g">Enregistrement sonore</option>
+        <option value="h">Image animée</option>
+        <option value="s">Document électronique</option>
+        <option value="r">Multimédia multi support</option>
+        <option value="t">Document d'archives et manuscrit</option>
+        <option value="o">Objet monétiforme</option>
+        <option value="p">Objet non monétiforme</option>
       </select>
-      <label for="period" class="control-label col-md-2">{{ _('Period') }}</label>
-      <input type="text" name="period" id="period" class="form-control form-control-sm col-md-4" placeholder="2018-06" pattern="(\d{4}(-\d{2})?(-\d{2})?)" title= "{{ _('Valid period is year (2018) or month (2018-06).') }}"/>
-    </div>
-    <div class="row mx-1 my-1">
       <label for="arkrecord" class="control-label col-md-2">{{ _('Ark record') }}</label>
       <div class="input-group col-md-4">
         <div class="input-group-prepend">
@@ -38,15 +42,35 @@
       </div>
     </div>
     <div class="row mx-1 my-1">
+      <label for="publicationdate" class="control-label col-md-2">{{ _('Publication date') }}</label>
+      <input type="text" name="publicationdate" id="publicationdate" class="form-control form-control-sm col-md-4" placeholder="2018" pattern="(-?\d{4})|(\d{4}-(\d{4})?)" title= "{{ _('Valid entry is a year or an interval of years (1900-1910).') }}"/>
+    </div>
+    <div class="row mx-1 my-1">
+      <select for="value1" id="field1" class="selectpicker show-tick form-control form-control-sm col-md-2">
+        <option value="all"><i>{{ _('In the record') }}</i></option>
+        <option value="title" selected="selected">{{ _('Title') }}</option>
+        <option value="creator">{{ _('Creator') }}</option>
+      </select>
+      <input type="text" name="value1" id="value1" class="form-control form-control-sm col-md-4" placeholder="Impressions de Sicile" />
+      <select for="value2" id="field2" class="selectpicker show-tick form-control form-control-sm col-md-2">
+        <option value="all"><i>{{ _('In the record') }}</i></option>
+        <option value="title">{{ _('Title') }}</option>
+        <option value="creator" selected="selected">{{ _('Creator') }}</option>
+      </select>
+      <input type="text" name="value2" id="value2" class="form-control form-control-sm col-md-4" placeholder="Princesse Wolkonsky" />
+    </div>
+    <div class="row mx-1 my-1">
       <label for="displayColumns" class="control-label col-md-2">{{ _('Display') }}</label> <!---->
       <select id="displayColumns" class="selectpicker show-tick form-control form-control-sm col-md-4" data-width="75%" data-actions-box="true" multiple="multiple">
         <option value="title">{{ _('Title') }}</option>
-        <!--<option value="creator">{{ _('Creator') }}</option>-->
-        <option value="file_count">{{ _('File count') }}</option>
-        <option value="size">{{ _('Size') }}</option>
-        <option value="record_no">{{ _('Record number') }}</option>
+        <option value="creator">{{ _('Creator') }}</option>
+        <option value="publisher">{{ _('Publisher') }}</option>
+        <!--<option value="file_count">{{ _('File count') }}</option>-->
+        <!--<option value="size">{{ _('Size') }}</option>-->
+        <!--<option value="record_no">{{ _('Record number') }}</option>-->
+        <option value="ark_doc">{{ _('Ark document') }}</option>
         <option value="call_no">{{ _('Call number') }}</option>
-        <option value="ingest_date" selected>{{ _('Ingest date') }}</option>
+        <option value="publication_date" selected>{{ _('Publication date') }}</option>
       </select>
     </div>
 
@@ -69,15 +93,15 @@
         data-show-columns="false"
         data-show-export="true"
         data-pagination="true"
-        data-page-size="50"
-        data-page-list="[50, 100, 500]"
+        data-page-size="10"
+        data-page-list="[10, 50, 100, 500]"
         data-pagination-loop="true"
         data-side-pagination="server"
         data-pagination-v-align="both"
         data-locale="{{ _('en') }}"
         data-unique-id="ark"
         data-method="post"
-        data-url="/customquery"
+        data-url="/srucatalogquery"
         data-query-params="queryParams"
         data-response-handler="queryResponseHandler"
   >
@@ -91,14 +115,14 @@
     var $table = $("#table")
     var $button = $("#btnSubmit")
     var $displayColumns = $("#displayColumns")
-    var $selectChannel = $("#channel")
+    var $selectDocType = $("#doctype")
 
     // onReady function
     $(function () {
         $button.click(function () {
-            // Test channel
-            if ($selectChannel.val() == '') {
-              showError("{{ _('Select a channel') }}");
+            // Test doctype
+            if ($selectDocType.val() == '') {
+              showError("{{ _('Select a type') }}");
               return
             }
             if (columnsChanged) {
@@ -122,22 +146,31 @@
           fullTotal = undefined
           columnsChanged = true
         });
-        // Monitor modification in period
-        $("#period").on("change", function() {
-            fullTotal = undefined
+        // Monitor modification in inputs
+        $("#doctype").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+          fullTotal = undefined
         });
         $("#arkrecord").on("change", function() {
             fullTotal = undefined
         });
-        $("#channel").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-          fullTotal = undefined
+        $("#publicationdate").on("change", function() {
+            fullTotal = undefined
+        });
+        $("#value1").on("change", function() {
+            fullTotal = undefined
+        });
+        $("#value2").on("change", function() {
+            fullTotal = undefined
         });
 
+        
         activeNavItem('retrieve');
         $("#alertMsg").hide();
         // Initialize the fields
-        $("#period").val(getCurrentYearMonth())
         $("#arkrecord").val("")
+        $("#publicationdate").val("")
+        $("#value1").val("")
+        $("#value2").val("")
         // Initialize the table
         initTable()
      });
@@ -147,17 +180,28 @@
       console.log("queryParams begin " + JSON.stringify(params))
       // Get the filters
       params.filter = {}
-      params.filter.channel = $("#channel").val()
-      if (params.filter.channel == '') {
+      params.filter.doc_type = $("#doctype").val()
+      if (params.filter.doc_type == '') {
         return false
       }
 
-      var period = $("#period").val()
-      if (period) params.filter.period = period
       var arkrecord = $("#arkrecord").val()
       if (arkrecord) {
         params.filter.arkrecord = "{{ ark_prefix }}" + arkrecord
       }
+      var publication_date = $("#publicationdate").val()
+      if (publication_date) params.filter.publication_date = publication_date
+      var value1 = $("#value1").val()
+      if (value1) {
+        params.filter.field1 = $("#field1").val()
+        params.filter.value1 = value1
+      }
+      var value2 = $("#value2").val()
+      if (value2) {
+        params.filter.field2 = $("#field2").val()
+        params.filter.value2 = value2
+      }
+
       // Get the columns
       params.columns = ["ark"]
       var columns = $("#displayColumns").val()
@@ -184,6 +228,18 @@
     function addDetail(value, row, index, field) {
       return '<a href="/upload?ark=' + row['ark'] + '"><button class="btn btn-primary"><span class="fa fa-arrow-circle-down"></span> {{ _("Upload") }}</span></button></a>'
     }
+    function addUrlCatalog(value) {
+      return '<a href="https://catalogue.bnf.fr/' + value + '" target="display">' + value + '</a>'
+    }
+    function addUrlGallica(value) {
+      if (value == undefined) return value
+      var values = value.split(" ; ")
+      var links = []
+      for (var i=0; i < values.length; i++) {
+        links.push('<a href="https://gallica.bnf.fr/' + values[i] + '" target="display">' + values[i] + '</a>')
+      }
+      return links.join(" ; ")
+    }
 
     function calculateColumns() {
       var columns = [
@@ -192,17 +248,28 @@
                         field: 'ark',
                         sortable: false,
                         switchable: false,
+                        formatter: addUrlCatalog
                     },
       ]
       $("#displayColumns option:selected").each(function(item) {
         var $this = $(this)
         // console.log("Column ", $this.text(), "=", $this.val())
-        columns.push({
-                        title: $this.text(),
-                        field: $this.val(),
-                        sortable: false,
-                        switchable: false,
-                    })
+        if ($this.val() == "ark_doc") {
+          columns.push({
+                          title: $this.text(),
+                          field: $this.val(),
+                          sortable: false,
+                          switchable: false,
+                          formatter: addUrlGallica
+                      })
+        } else {
+          columns.push({
+                          title: $this.text(),
+                          field: $this.val(),
+                          sortable: false,
+                          switchable: false,
+                      })
+        }
       })
       /*
       columns.push({
