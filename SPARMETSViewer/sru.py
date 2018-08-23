@@ -57,8 +57,9 @@ class SRUResponse():
 
     @property
     def relations(self):
-        basestring = 'Notice du catalogue : http://catalogue.bnf.fr/'
-        result = [r.text.replace(basestring, '').strip() for r in self.record_data.iter() if
+        basestring1 = 'Notice du catalogue : http://catalogue.bnf.fr/'
+        basestring2 = 'Notice du catalogue : http://archivesetmanuscrits.bnf.fr/'
+        result = [r.text.replace(basestring1, '').replace(basestring2, '').strip() for r in self.record_data.iter() if
                   r.tag.endswith('relation') and r.text.startswith("Notice du catalogue")]
         return result
 

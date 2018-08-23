@@ -34,7 +34,7 @@ class SRUResponse():
         self.record_data = record_data
         self.sru = sru
 
-    def xpathfor(tag, code):
+    def xpathfor(self, tag, code):
         prefix = ".//srw:record/srw:recordData/mxc:record/"
         return prefix + "mxc:datafield[@tag='%s']/mxc:subfield[@code='%s']" % (tag, code)
 

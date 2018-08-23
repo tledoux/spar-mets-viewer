@@ -26,7 +26,7 @@
     {%- if "ark:/12148/cb" in element['value'] -%}
 <span title="Notice OAI" data-html="true" data-poload="/bibrecord?value={{ element['value'] }}">&nbsp;<img src="/static/img/catgen.png" height="24" /></span></p>
     {%- elif "ark:/12148/cc" in element['value'] -%}
-<span title="Notice EAD" data-html="true" data-poload="/bibrecord?value={{ element['value'] }}">&nbsp;<img src="/static/img/bam.png" height="24" /></span></p>
+<span title="Notice EAD" data-html="true">&nbsp;<img src="/static/img/bam.png" height="24" /></span></p>
     {%- endif -%}
   {% elif element['element'] == 'ark identifier' %}
     <p><strong>{{ gettext(element['element'])|title + ':'}}</strong> {{ element['value']|safe }}

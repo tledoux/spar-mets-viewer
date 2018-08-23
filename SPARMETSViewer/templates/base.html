@@ -61,7 +61,6 @@
     <li class="nav-item">
       <a class="nav-link mv-explore" href="/navigate">{{ _('Exploration') }}</a>
     </li>
-    {% if access_platform and access_platform=='TEST' %}
     <li class="nav-item nav-text dropdown">
       <a class="nav-link dropdown-toggle mv-retrieve" href="#" id="navbarSearchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ _('Retrieve') }}</a>
       <div class="dropdown-menu" aria-labelledby="navbarSearchDropdown">
@@ -70,7 +69,6 @@
         <span class="dropdown-item"><a href="/gallicasearch">{{ _('SRU Gallica') }}</a></span>
       </div>
     </li>
-    {% endif %}
     <li class="nav-item">
       <a class="nav-link mv-report" href="/report">{{ _('Report') }}</a>
     </li>
@@ -87,7 +85,7 @@
       <span class="fa fa-info"></span>
     </a>
     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-      <span class="dropdown-item"><span class="fa fa-flag fa-fw"></span> Version 0.2</span>
+      <span class="dropdown-item"><span class="fa fa-flag fa-fw"></span> Version 0.3</span>
       {% if last_date %}
       <span class="dropdown-item"><span class="fa fa-calendar-check-o fa-fw" title="{{ _('Last synchro date') }}"></span> {{ last_date }}</span>
       {% endif %}

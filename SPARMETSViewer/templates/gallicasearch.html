@@ -225,7 +225,13 @@
       return '<a href="/upload?ark=' + row['ark'] + '"><button class="btn btn-primary"><span class="fa fa-arrow-circle-down"></span> {{ _("Upload") }}</span></button></a>'
     }
     function addUrlCatalog(value) {
-      return '<a href="https://catalogue.bnf.fr/' + value + '" target="display">' + value + '</a>'
+      if (value.startsWith("ark:/12148/cb") {
+        return '<a href="https://catalogue.bnf.fr/' + value + '" target="display">' + value + '</a>'
+      } else if (value.startsWith("ark:/12148/cb") {
+        return '<a href="https://archivesetmanuscrits.bnf.fr/' + value + '" target="display">' + value + '</a>'
+      } else {
+        return value
+      }
     }
     function addUrlGallica(value) {
       if (value == undefined) return value

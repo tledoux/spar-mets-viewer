@@ -122,7 +122,7 @@ class SRUSimple():
             print("Num records %s" % num_records, file=sys.stderr)
         self.num_records = int(num_records[0])
         if self.num_records != 1:
-            raise False
+            raise ValueError("Not found")
         oai_xpath = "/srw:searchRetrieveResponse/srw:records/srw:record/srw:recordData/oai_dc:dc"
         record = record_data.xpath(oai_xpath, namespaces=NAMESPACES)[0]
         return record
