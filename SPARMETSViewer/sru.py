@@ -65,9 +65,9 @@ class SRUResponse():
 
     @property
     def description_sets(self):
-        basestring = 'Appartient à l’ensemble documentaire : '
+        basestring = "Appartient à l'ensemble documentaire : "
         result = [r.text.replace(basestring, '') for r in self.record_data.iter() if
-                  r.tag.endswith('description') and r.text.startswith("Appartient à l’ensemble")]
+                  r.tag.endswith('description') and r.text.startswith("Appartient à l'ensemble")]
         return result
 
     @property

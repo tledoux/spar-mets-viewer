@@ -167,7 +167,10 @@ class ReferenceData(Singleton):
         elif kind == "type":
             query = """
                 SELECT DISTINCT (?id AS ?label) ?id WHERE {
-                  [] dc:type ?id.
+                  GRAPH ?g {
+                    { ?p a sparstructure:set } UNION { ?p a sparstructure:group }
+                    ?p dc:type ?id.
+                  }
                 } ORDER BY ?id LIMIT 100"""
         elif kind == "event":
             query = """
