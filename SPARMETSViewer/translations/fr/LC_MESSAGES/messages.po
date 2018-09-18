@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-08-10 16:48+0200\n"
+"POT-Creation-Date: 2018-09-18 15:25+0200\n"
 "PO-Revision-Date: 2018-05-26 20:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -172,32 +172,32 @@ msgstr "fichier"
 msgid "en"
 msgstr "fr"
 
-#: SPARMETSViewer/views.py:776
+#: SPARMETSViewer/views.py:784
 msgid "No file part"
 msgstr "Pas de fichier"
 
-#: SPARMETSViewer/views.py:786
+#: SPARMETSViewer/views.py:794
 msgid "No selected file"
 msgstr "Pas de fichier séléctionné"
 
-#: SPARMETSViewer/views.py:804 SPARMETSViewer/views.py:870
+#: SPARMETSViewer/views.py:812 SPARMETSViewer/views.py:878
 msgid "METS already exists"
 msgstr "Le fichier METS existe déjà"
 
-#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:812
-#: SPARMETSViewer/views.py:878
+#: SPARMETSViewer/templates/uploadsuccess.html:3 SPARMETSViewer/views.py:820
+#: SPARMETSViewer/views.py:886
 msgid "Success! METS file uploaded!"
 msgstr "Succès ! Fichier METS téléchargé !"
 
-#: SPARMETSViewer/views.py:815
+#: SPARMETSViewer/views.py:823
 msgid "Not allowed selected file"
 msgstr "Fichier sélectionné non autorisé"
 
-#: SPARMETSViewer/views.py:832
+#: SPARMETSViewer/views.py:840
 msgid "No ARK part"
 msgstr "Pas d'ARK fourni"
 
-#: SPARMETSViewer/views.py:854
+#: SPARMETSViewer/views.py:862
 msgid "METS not found"
 msgstr "METS non trouvé"
 
@@ -318,40 +318,40 @@ msgstr "Téléchargement"
 msgid "Exploration"
 msgstr "Exploration"
 
-#: SPARMETSViewer/templates/base.html:66
+#: SPARMETSViewer/templates/base.html:65
 msgid "Retrieve"
 msgstr "Récupération"
 
-#: SPARMETSViewer/templates/base.html:68
+#: SPARMETSViewer/templates/base.html:67
 msgid "SPAR Repository"
 msgstr "Entrepôt SPAR"
 
-#: SPARMETSViewer/templates/base.html:69
+#: SPARMETSViewer/templates/base.html:68
 msgid "SRU Catalog"
 msgstr "SRU Catalogue"
 
-#: SPARMETSViewer/templates/base.html:70
+#: SPARMETSViewer/templates/base.html:69
 msgid "SRU Gallica"
 msgstr "SRU Gallica"
 
-#: SPARMETSViewer/templates/base.html:75
+#: SPARMETSViewer/templates/base.html:73
 msgid "Report"
 msgstr "Bilan"
 
-#: SPARMETSViewer/templates/base.html:78
+#: SPARMETSViewer/templates/base.html:76
 #: SPARMETSViewer/templates/reference.html:18
 msgid "Reference"
 msgstr "Référentiel"
 
-#: SPARMETSViewer/templates/base.html:81
+#: SPARMETSViewer/templates/base.html:79
 msgid "MD5 Hash"
 msgstr "Empreinte MD5"
 
-#: SPARMETSViewer/templates/base.html:92
+#: SPARMETSViewer/templates/base.html:90
 msgid "Last synchro date"
 msgstr "Date de dernière synchronisation"
 
-#: SPARMETSViewer/templates/base.html:104
+#: SPARMETSViewer/templates/base.html:102
 #: SPARMETSViewer/templates/catalogsearch.html:13
 #: SPARMETSViewer/templates/explore.html:25
 #: SPARMETSViewer/templates/gallicasearch.html:13
@@ -486,14 +486,14 @@ msgid "Submit"
 msgstr "Soumettre"
 
 #: SPARMETSViewer/templates/catalogsearch.html:247
-#: SPARMETSViewer/templates/gallicasearch.html:243
+#: SPARMETSViewer/templates/gallicasearch.html:249
 #: SPARMETSViewer/templates/retrieve.html:191
 #: SPARMETSViewer/templates/search.html:98
 msgid "ark"
 msgstr "ark"
 
 #: SPARMETSViewer/templates/catalogsearch.html:276
-#: SPARMETSViewer/templates/gallicasearch.html:272
+#: SPARMETSViewer/templates/gallicasearch.html:278
 #: SPARMETSViewer/templates/retrieve.html:209
 #: SPARMETSViewer/templates/search.html:111
 msgid "details"
@@ -702,6 +702,10 @@ msgstr "Recherche SRU dans Gallica"
 #: SPARMETSViewer/templates/gallicasearch.html:68
 msgid "Set"
 msgstr "Ensemble"
+
+#: SPARMETSViewer/templates/gallicasearch.html:93
+msgid "All"
+msgstr "Tous"
 
 #: SPARMETSViewer/templates/index.html:4
 msgid "A web application for human-friendly exploration of SPAR METS files"

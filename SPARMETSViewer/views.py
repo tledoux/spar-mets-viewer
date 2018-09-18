@@ -144,7 +144,13 @@ def custom_query_json():
     if "arkrecord" in content['filter']:
         arkrecord = content['filter']['arkrecord']
         triples += " ?p dc:relation <%s>. " % arkrecord
-    limit = "OFFSET " + str(content['offset']) + " LIMIT " + str(content['limit'])
+
+    limit = ""
+    if "offset" in content and content['offset']:
+        limit += "OFFSET " + str(content['offset'])
+    if "limit" in content and content['limit']:
+        limit += " LIMIT " + str(content['limit'])
+ 
     columns = content['columns']
     head = "?ark "
     triples += """?p sparprovenance:hasEvent ?e.
@@ -576,12 +582,14 @@ def gallica_sru():
     if maximumrecords:
         maximumrecords = int(maximumrecords)
     else:
-        maximumrecords = 10
+        maximumrecords = -1 
     app.logger.debug("THL SRU limit %s of %s", startrecord, maximumrecords)
     response = endpoint.search(query, startrecord=startrecord)
 
     records = []
     total = endpoint.num_records
+    if maximumrecords == -1:
+        maximumrecords = total
     app.logger.debug("THL SRU Num records %s", total)
     if total == 0:
         result = {}
